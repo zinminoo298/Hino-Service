@@ -117,7 +117,6 @@
             android:layout_marginEnd="20dp"
             android:background="@drawable/round_corner_button"
             android:clickable="true"
-            android:fontFamily="@font/inter_semibold"
             android:text="Login"
             android:textColor="#ffffff"
             android:textSize="20sp" />
@@ -127,8 +126,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:fontFamily="@font/inter_semibold"
+        android:layout_marginBottom="4dp"
         android:gravity="center"
         android:text="Last update: 14/02/2023"
         android:textColor="#F08F5F"

@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">My Application</string>
-    <string name="login_toobar">Hino Service</string>
+    <string name="login_toolbar">Hino Service</string>
+    <string name="setting_toolbar">Setting</string>
+    <string name="main_menu_toolbar">Service Menu</string>
+    <string name="receive_skb_toolbar">Receive SKB</string>
 </resources>
