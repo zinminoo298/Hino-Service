@@ -276,7 +276,10 @@ class ReceiveSKB : AppCompatActivity() {
     private fun asyncListOrderNo(orderDate:String){
         val deferred = lifecycleScope.async(Dispatchers.IO) {
             orderNoList.clear()
-            orderNoList = DeliveryQuery().showOrder( orderDate, "", "")
+            var showOrderList = DeliveryQuery().showOrder( orderDate, "", "")
+            for(i in 0 until showOrderList.size){
+                orderNoList.add(showOrderList[i].substringBefore("|"))
+            }
         }
 
         lifecycleScope.launch(Dispatchers.Main) {

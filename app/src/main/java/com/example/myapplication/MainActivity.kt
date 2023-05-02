@@ -19,8 +19,7 @@ class MainActivity : AppCompatActivity() {
         val linearLayoutCheck = findViewById<LinearLayout>(R.id.linearLayout_check)
 
         linearLayoutReceiveSkb.setOnClickListener {
-            val intent = Intent(this, ReceiveSKB::class.java)
-            startActivity(intent)
+            startActivity(ReceiveSKB::class.java)
         }
 
         linearLayoutReceiveNoSkb.setOnClickListener {
@@ -36,12 +35,16 @@ class MainActivity : AppCompatActivity() {
         }
 
         textViewStatus.setOnClickListener {
-
+            startActivity(SkbStatus::class.java)
         }
 
         linearLayoutCheck.setOnClickListener {
 
         }
+    }
 
+    private fun startActivity(cls:Class<*>){
+        val intent = Intent(this,cls)
+        startActivity(intent)
     }
 }

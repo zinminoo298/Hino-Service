@@ -95,4 +95,5 @@ class Login : AppCompatActivity() {
         var prefs = getSharedPreferences("databasePassword", Activity.MODE_PRIVATE)
         Gvariable.databasePassword = prefs.getString("valDatabasePassword", "").toString()
     }
+
 }

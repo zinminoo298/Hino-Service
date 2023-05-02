@@ -1,5 +1,7 @@
 package com.example.myapplication.DataQuery
 
+import com.example.myapplication.DataModel.GetDetailSKBModel
+import com.example.myapplication.DataModel.GetOrderDetailModel
 import com.example.myapplication.Gvariable
 import java.sql.Date
 import java.sql.ResultSet
@@ -79,5 +81,52 @@ class OrderDetailQuery {
         }catch (e:Exception){
             e.printStackTrace()
         }
+    }
+
+    fun getOrderFromSKB(skb:String): String{
+        var result: ResultSet? = null
+        var orderNo = ""
+        var sql = "SELECT Top 1  Orderno From OrderProcess Where SerialNo = '$skb' Order by OrderNo Desc"
+
+        try {
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            result = statement.executeQuery(sql)
+            orderNo = if(result.next()) {
+                result.getString("Orderno")
+            } else{
+                ""
+            }
+            statement.close()
+            Gvariable.conn!!.close()
+        }catch (e:Exception){
+            e.printStackTrace()
+            Gvariable.conn!!.close()
+            orderNo = ""
+        }
+        return orderNo
+    }
+
+    fun getDetailSKB(skb:String) : ArrayList<GetDetailSKBModel>{
+        var detailSkbList = ArrayList<GetDetailSKBModel>()
+        var result: ResultSet? = null
+        var sql = "SELECT ColumnNM As Detail,Detail As [Date]  FROM  PDA_Detail_getSKBDetail('$skb')  Order by Row_ID"
+        try{
+            detailSkbList.clear()
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            result = statement.executeQuery(sql)
+            while(result.next()){
+                //add to data mode
+                val detail = result.getString("Detail")
+                val date = result.getString("Date")
+                detailSkbList.add(GetDetailSKBModel(detail, date))
+            }
+        }catch (e:Exception){
+            e.printStackTrace()
+            detailSkbList.clear()
+            Gvariable.conn!!.close()
+        }
+        return detailSkbList
     }
 }

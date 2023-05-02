@@ -4,4 +4,8 @@
     <string name="setting_toolbar">Setting</string>
     <string name="main_menu_toolbar">Service Menu</string>
     <string name="receive_skb_toolbar">Receive SKB</string>
+    <string name="receive_no_skb_toolbar">Receive No SKB</string>
+    <string name="delivery_toolbar">Delivery Case</string>
+    <string name="skb_status_toolbar">SKB Status</string>
+
 </resources>

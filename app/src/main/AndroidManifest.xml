@@ -19,6 +19,27 @@
         android:theme="@style/Theme.NoActionBar"
         tools:targetApi="31">
         <activity
+            android:name=".CheckListCase"
+            android:exported="false" />
+        <activity
+            android:name=".SkbStatus"
+            android:exported="false" />
+        <activity
+            android:name=".TransferCaseNo"
+            android:exported="false" />
+        <activity
+            android:name=".Delivery"
+            android:exported="false" />
+        <activity
+            android:name=".Packing"
+            android:exported="false" />
+        <activity
+            android:name=".ListOrder"
+            android:exported="false" />
+        <activity
+            android:name=".ReceiveNoSKB"
+            android:exported="false" />
+        <activity
             android:name=".ReceiveSKB"
             android:exported="false" />
         <activity
