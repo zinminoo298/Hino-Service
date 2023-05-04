@@ -40,7 +40,7 @@ class SkbStatus : AppCompatActivity() {
 
         editTextSKB.setOnKeyListener(View.OnKeyListener { _, _, event ->
             if (event.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
-                if (editTextSKB.text.toString().isNotEmpty()) {
+                if (editTextSKB.text.toString().trim().isNotEmpty()) {
                     if (editTextSKB.text.toString().length == 15) {
                         asyncSearchSKB()
                     } else {

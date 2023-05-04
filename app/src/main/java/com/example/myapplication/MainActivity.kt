@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         linearLayoutCheck.setOnClickListener {
-
+            startActivity(CheckListCase::class.java)
         }
     }
 
