@@ -73,6 +73,10 @@ class CheckListCase : AppCompatActivity() {
             }
             false
         })
+        buttonSave.setOnClickListener {
+            val sCaseNo = editTextCaseNo.text.toString().trim()
+            val sPartNo = textViewPartNo.text.toString().trim()
+        }
 
         buttonUp.setOnClickListener {
             editTextQty.setText("${ (Integer.parseInt(editTextQty.text.toString()) + 1) }")
@@ -181,6 +185,27 @@ class CheckListCase : AppCompatActivity() {
         val arrayAdapter: ArrayAdapter<String> = ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, orderNoList)
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerOrderNo.adapter = arrayAdapter
+    }
+
+    private fun asyncSave(){
+        val deferred = lifecycleScope.async(Dispatchers.IO) {
+
+        }
+        lifecycleScope.launch(Dispatchers.Main) {
+            if (deferred.isActive) {
+                val progressDialogBuilder = Gvariable().createProgressDialog(this@CheckListCase)
+                try {
+                    progressDialogBuilder.show()
+                    deferred.await()
+
+                } finally {
+                    progressDialogBuilder.cancel()
+                }
+            } else {
+                deferred.await()
+
+            }
+        }
     }
 
 }
