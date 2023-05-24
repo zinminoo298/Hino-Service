@@ -9,6 +9,7 @@ class OrderProcessQuery {
     fun getOrder(userSerialNo:String, uOrder:String, uDate:String):ArrayList<GetOrderModel>{
         var sql = ""
         var result: ResultSet? = null
+        getOrderList.clear()
 
         sql = "SELECT OrderProcess.PId, OrderProcess.OrderDetailId, OrderProcess.OrderNo, OrderProcess.SerialNo, OrderProcess.PackingDate, " +
                 "OrderProcess.ReceiveQty, OrderProcess.PackQty, OrderProcess.ReceiveDate, " +
@@ -109,5 +110,56 @@ class OrderProcessQuery {
             Gvariable.conn!!.close()
         }
         return qty
+    }
+
+    fun getSumQtyByPid(pId:String, fieldName:String) : Int{
+        var qty = 0
+        var sql = "Select Isnull(sum($fieldName),'') as Qty from orderprocess where PId='$pId'"
+        var result: ResultSet? = null
+        try{
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            result = statement.executeQuery(sql)
+            if(result.next()){
+                qty = result.getInt("Qty")
+            }
+            statement.close()
+            Gvariable.conn!!.close()
+        }catch (e:Exception){
+            qty = 0
+            e.printStackTrace()
+            Gvariable.conn!!.close()
+        }
+        return qty
+    }
+
+    fun save(id:String, orderDetailId:String, orderNo:String, serialNo:String) : Boolean{
+        var mReturn:Boolean? = null
+        var sql = ""
+        var result: ResultSet? = null
+
+        sql = "select PId from OrderProcess where PId = @PId " +
+                " if @@Rowcount = 0  " +
+                " INSERT INTO OrderProcess(PId, OrderDetailId, OrderNo, SerialNo) " +
+                " VALUES ($id, $orderDetailId, $orderNo, $serialNo) " +
+                " else " +
+                " update OrderProcess set " +
+                " PId=$id, OrderDetailId=$orderDetailId, OrderNo=$orderNo, SerialNo=$serialNo " +
+                " where PId = $id "
+
+        mReturn = try{
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            statement.executeUpdate(sql)
+            statement.close()
+            Gvariable.conn!!.close()
+            true
+        }catch (e:Exception){
+            e.printStackTrace()
+            Gvariable.conn!!.close()
+            false
+        }
+
+        return mReturn!!
     }
 }

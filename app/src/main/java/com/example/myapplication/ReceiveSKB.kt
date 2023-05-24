@@ -62,7 +62,7 @@ class ReceiveSKB : AppCompatActivity() {
                             layoutInflater
                         )
                         Gvariable().alarm(this)
-                        ediTextScanKanban.text.clear()
+                        ediTextScanKanban.selectAll()
                         ediTextScanKanban.requestFocus()
                     }
                 } else {
@@ -89,7 +89,15 @@ class ReceiveSKB : AppCompatActivity() {
 
     private fun onLoad(){
         val deferred = lifecycleScope.async(Dispatchers.IO) {
-            currentDate = GetTimeQuery().timeServer()
+            val getDate = GetTimeQuery().timeServer()
+            val date = getDate.split("|").toTypedArray()[0]
+            val date1 = getDate.split("|").toTypedArray()[1]
+            currentDate = date
+            orderNoList.clear()
+            val showOrderList = DeliveryQuery().showOrder( date1, "", "")
+            for(i in 0 until showOrderList.size){
+                orderNoList.add(showOrderList[i].substringBefore("|"))
+            }
         }
         lifecycleScope.launch(Dispatchers.Main) {
             if (deferred.isActive) {
@@ -150,11 +158,16 @@ class ReceiveSKB : AppCompatActivity() {
         var newQty = 0
 
         orderDetail = OrderDetailQuery().getOrderIdBySerial("RECEIVE", docSerial).trim()
-        arrayOrderDetail = orderDetail.split("|") as ArrayList<String>
-        if (orderDetail.length == 3) {
+        arrayOrderDetail.add(orderDetail.split("|").toTypedArray()[0])
+        arrayOrderDetail.add(orderDetail.split("|").toTypedArray()[1])
+        arrayOrderDetail.add(orderDetail.split("|").toTypedArray()[2])
+        if (arrayOrderDetail[0] != "") {
             date = arrayOrderDetail[2].trim()
             //set date time picker
-            //DateTimePicker1.Value = New Date(Mid(_date, 1, 4), Mid(_date, 5, 2), Mid(_date, 7, 2))
+            currentDate = "${date.substring(6,8)}-${date.substring(4,6)}-${date.substring(0,4)}"
+            Handler(Looper.getMainLooper()).post {
+                textViewOrderDate.text = currentDate
+            }
             orderId = arrayOrderDetail[0]
             orderNo = arrayOrderDetail[1]
             orderNoList.clear()
@@ -303,26 +316,18 @@ class ReceiveSKB : AppCompatActivity() {
     private fun datePicker(){
         val arrayList = currentDate.split("-").toTypedArray()
         val year = Integer.parseInt(arrayList[2])
-        val month = Integer.parseInt(arrayList[1])-1
+        val month = Integer.parseInt(arrayList[1]) - 1
         val day = Integer.parseInt(arrayList[0])
-        var formattedDate = ""
         var oldDate = currentDate
         val dpd = DatePickerDialog(
             this,
             DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
                 val mth = monthOfYear + 1
-                val date = "$dayOfMonth/$mth/$year"
 
-                val dateOriginalFormat = SimpleDateFormat("dd/mm/yyyy")
-                val dateFormatter = SimpleDateFormat("dd-mm-yyyy")
-                val dateFormatter1 = SimpleDateFormat("yyyyMMdd")
-                val dateObj = dateOriginalFormat.parse(date)
-
-                currentDate = dateFormatter.format(dateObj)
-                formattedDate = dateFormatter1.format(dateObj)
+                currentDate = "${String.format("%02d",dayOfMonth)}-${String.format("%02d",mth)}-$year"
                 textViewOrderDate.text = currentDate
                 if(currentDate != oldDate){
-                    asyncListOrderNo(formattedDate)
+                    asyncListOrderNo("$year${String.format("%02d",mth)}${String.format("%02d",dayOfMonth)}")
                 }
             },
             year,

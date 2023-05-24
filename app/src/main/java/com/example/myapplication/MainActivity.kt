@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         linearLayoutReceiveNoSkb.setOnClickListener {
-
+            startActivity(ReceiveNoSKB::class.java)
         }
 
         linearLayoutPacking.setOnClickListener {
@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         textViewDelivery.setOnClickListener {
-
+            startActivity(Delivery::class.java)
         }
 
         textViewStatus.setOnClickListener {

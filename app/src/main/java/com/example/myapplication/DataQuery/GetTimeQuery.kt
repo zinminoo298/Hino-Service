@@ -10,10 +10,12 @@ class GetTimeQuery {
         try{
             Gvariable().startConn()
             val statement = Gvariable.conn!!.createStatement()
-            val sql = "SELECT CONVERT(char(20), Format(getdate(),'dd-MM-yyyy'), 120) AS date"
+            val sql = "SELECT CONVERT(char(20), Format(getdate(),'dd-MM-yyyy'), 120) AS date, CONVERT(char(20), Format(getdate(),'yyyyMMdd'), 120) AS date1"
             resultSet = statement.executeQuery(sql)
             if(resultSet.next()){
-                currentDate = resultSet.getString("date").trim()
+                val date = resultSet.getString("date").trim()
+                val date1 = resultSet.getString("date1").trim()
+                currentDate = "$date|$date1"
             }
             statement.close()
             Gvariable.conn!!.close()

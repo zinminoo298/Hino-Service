@@ -32,13 +32,14 @@ class OrderDetailQuery {
             mReturn = if(result.next()) {
                 "${result.getString("OrderDetailId")}|${result.getString("OrderNO")}|${result.getString("OrderDate")}"
             } else{
-                ""
+                "|||"
             }
             statement.close()
             Gvariable.conn!!.close()
         }catch (e:Exception){
             e.printStackTrace()
             Gvariable.conn!!.close()
+            mReturn = "|||"
         }
 
         return mReturn
@@ -128,5 +129,34 @@ class OrderDetailQuery {
             Gvariable.conn!!.close()
         }
         return detailSkbList
+    }
+
+    fun getOrderDetailByPartNo(orderNo:String, partNo:String): String{
+        var result: ResultSet? = null
+        var returnString = ""
+        var sql = "SELECT OrderDetailId, OrderNo, OrderDate, OrderQty  " +
+                "  FROM V_PDA_SummaryRPD_by_Order " +
+                "  WHERE (OrderNo = '$orderNo') AND (PartNo = '$partNo')"
+
+        try {
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            result = statement.executeQuery(sql)
+            if(result.next()) {
+                returnString = "${result.getString("OrderDetailId")}|" +
+                        "${result.getString("OrderNo")}|" +
+                        "${result.getString("OrderDate")}|" +
+                        "${result.getString("OrderQty")}"
+            } else{
+                returnString = ""
+            }
+            statement.close()
+            Gvariable.conn!!.close()
+        }catch (e:Exception){
+            e.printStackTrace()
+            Gvariable.conn!!.close()
+            returnString = ""
+        }
+        return returnString
     }
 }

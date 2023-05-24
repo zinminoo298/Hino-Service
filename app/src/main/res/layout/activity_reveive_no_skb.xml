@@ -58,6 +58,7 @@
         android:textSize="18sp" />
 
     <LinearLayout
+        android:visibility="gone"
         android:id="@+id/linearLayout3"
         android:layout_width="match_parent"
         android:layout_height="35dp"
@@ -253,11 +254,12 @@
             android:textColor="@color/black"
             android:textSize="16sp" />
 
-        <Spinner
-            android:id="@+id/spinner_totalReceive"
+        <TextView
+            android:id="@+id/textview_totalReceive"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.6"
+            android:background="@android:drawable/editbox_background"
             android:layout_gravity="center"
             android:textColor="@color/black"
             android:textSize="16sp" />
