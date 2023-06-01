@@ -34,16 +34,16 @@ class LoginQuery(private val context: Context, private val username: String, pri
 
             if(result.next()){
 
-                if (result.getString("UserName") == null) {
+                if (result.getString("FullName") == null) {
                     Gvariable.userRealName = ""
                 } else {
-                    Gvariable.userRealName = result.getString("UserName")
+                    Gvariable.userRealName = result.getString("FullName")
                 }
 
-                if (result.getString("FullName") == null) {
+                if (result.getString("UserName") == null) {
                     Gvariable.userName = ""
                 } else {
-                    Gvariable.userName = result.getString("FullName")
+                    Gvariable.userName = result.getString("UserName").trim()
                 }
             }
             else{
@@ -73,4 +73,6 @@ class LoginQuery(private val context: Context, private val username: String, pri
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
     }
+
+
 }

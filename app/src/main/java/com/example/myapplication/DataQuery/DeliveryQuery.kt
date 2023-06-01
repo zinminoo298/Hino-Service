@@ -173,8 +173,21 @@ class DeliveryQuery {
         return orderDetailList
     }
 
-    fun closeCase(sDeliveryDate:String, sRound:String, sCaseNo:String, deliveryBy:String) : Boolean{
+    fun closeCase(sDeliveryDate:String, sRound:Int, sCaseNo:String, deliveryBy:String) : Boolean{
         var sql = "EXEC spPDA_Delivery_closeCaseNo '$sDeliveryDate','$sRound', '$sCaseNo', '$deliveryBy','' "
+        return try {
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            statement.executeUpdate(sql)
+            true
+        }catch (e:Exception){
+            e.printStackTrace()
+            false
+        }
+    }
+
+    fun transferCaseNo(sOCaseNo:String, sNCaseNo:String) : Boolean{
+        var sql = "EXEC spPDA_Delivery_TransferCaseNo '$sOCaseNo','$sNCaseNo', '' "
         return try {
             Gvariable().startConn()
             val statement = Gvariable.conn!!.createStatement()

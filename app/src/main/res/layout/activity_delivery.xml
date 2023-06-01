@@ -106,18 +106,19 @@
             android:textColor="@color/black"
             android:textSize="16sp"/>
 
-            <EditText
-                android:id="@+id/editText_case_no"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:background="@android:drawable/editbox_background"
-                android:layout_weight="0.7"
-                android:paddingStart="5dp"
-                android:paddingEnd="3dp"
-                android:layout_gravity="center" />
+        <EditText
+            android:id="@+id/editText_case_no"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:background="@android:drawable/editbox_background"
+            android:layout_weight="0.7"
+            android:paddingStart="5dp"
+            android:paddingEnd="3dp"
+            android:singleLine="true"
+            android:layout_gravity="center" />
     </LinearLayout>
 
-    <HorizontalScrollView
+    <LinearLayout
         android:id="@+id/horizontalScrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -133,67 +134,65 @@
         app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:padding="5dp">
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="5dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_weight="0.15"
+                android:layout_gravity="center"
+                android:gravity="start|center"
+                android:paddingStart="5dp"
+                android:text="No"
+                android:textColor="@color/black" />
 
-                <TextView
-                    android:layout_width="40dp"
-                    android:layout_height="30dp"
-                    android:layout_gravity="center"
-                    android:gravity="start|center"
-                    android:paddingStart="5dp"
-                    android:text="No"
-                    android:textColor="@color/black" />
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_weight="0.4"
+                android:layout_gravity="center"
+                android:gravity="left|center"
+                android:paddingLeft="5dp"
+                android:text="Part No."
+                android:textColor="@color/black" />
 
-                <TextView
-                    android:layout_width="120dp"
-                    android:layout_height="30dp"
-                    android:layout_gravity="center"
-                    android:gravity="left|center"
-                    android:paddingLeft="5dp"
-                    android:text="Part No."
-                    android:textColor="@color/black" />
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_weight="0.3"
+                android:layout_gravity="center"
+                android:gravity="left|center"
+                android:paddingLeft="5dp"
+                android:text="Order No."
+                android:textColor="@color/black" />
 
-                <TextView
-                    android:layout_width="100dp"
-                    android:layout_height="30dp"
-                    android:layout_gravity="center"
-                    android:gravity="left|center"
-                    android:paddingLeft="5dp"
-                    android:text="Order No."
-                    android:textColor="@color/black" />
-
-                <TextView
-                    android:layout_width="50dp"
-                    android:layout_height="30dp"
-                    android:layout_gravity="center"
-                    android:gravity="left|center"
-                    android:paddingLeft="5dp"
-                    android:text="Qty"
-                    android:textColor="@color/black" />
-
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/blue" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerview_delivery_normal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_weight="0.15"
+                android:layout_gravity="center"
+                android:gravity="left|center"
+                android:paddingLeft="5dp"
+                android:text="Qty"
+                android:textColor="@color/black" />
 
         </LinearLayout>
 
-    </HorizontalScrollView>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/blue" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerview_delivery_normal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
 
     <LinearLayout
         android:id="@+id/view"

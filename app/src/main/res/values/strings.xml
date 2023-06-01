@@ -8,5 +8,8 @@
     <string name="delivery_toolbar">Delivery Case</string>
     <string name="skb_status_toolbar">SKB Status</string>
     <string name="check_list_case_toolbar">Check &amp; Update</string>
+    <string name="transfer_case_toolbar">Transfer Case</string>
+    <string name="packing_toolbar">Packing</string>
+    <string name="open_case_packing_toolbar">OC Packing</string>
 
 </resources>

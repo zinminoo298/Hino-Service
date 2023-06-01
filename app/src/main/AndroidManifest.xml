@@ -19,9 +19,12 @@
         android:theme="@style/Theme.NoActionBar"
         tools:targetApi="31">
         <activity
+            android:name=".Packing"
+            android:exported="false" />
+        <activity
             android:name=".CheckListCase"
             android:exported="false"
-            android:windowSoftInputMode="adjustPan"/>
+            android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".SkbStatus"
             android:exported="false" />
@@ -32,7 +35,7 @@
             android:name=".Delivery"
             android:exported="false" />
         <activity
-            android:name=".Packing"
+            android:name=".OpenCasePacking"
             android:exported="false" />
         <activity
             android:name=".ListOrder"

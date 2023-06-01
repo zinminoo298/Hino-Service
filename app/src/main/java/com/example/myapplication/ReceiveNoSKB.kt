@@ -48,7 +48,7 @@ class ReceiveNoSKB : AppCompatActivity() {
         spinnerOrderNo = findViewById(R.id.spinner_orderNo)
         textViewPartNo = findViewById(R.id.textView_partNo)
         textViewPds = findViewById(R.id.textview_pds)
-        buttonSave = findViewById(R.id.button_save)
+        buttonSave = findViewById(R.id.btn_save)
 
         asyncGetDate()
 

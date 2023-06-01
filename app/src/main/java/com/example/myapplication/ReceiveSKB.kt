@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import kotlin.collections.ArrayList
 
-class ReceiveSKB : AppCompatActivity() {
+class  ReceiveSKB : AppCompatActivity() {
     companion object {
         lateinit var ediTextScanKanban: EditText
         lateinit var textViewSerial: TextView

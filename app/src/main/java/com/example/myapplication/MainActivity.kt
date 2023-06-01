@@ -5,6 +5,12 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.lifecycle.lifecycleScope
+import com.example.myapplication.DataQuery.GetTimeQuery
+import com.example.myapplication.DataQuery.PackingQuery
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,11 +33,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         linearLayoutPacking.setOnClickListener {
-
+            asyncOpenCasePacking()
         }
 
         textViewDelivery.setOnClickListener {
-            startActivity(Delivery::class.java)
+            asyncGetDate()
         }
 
         textViewStatus.setOnClickListener {
@@ -46,5 +52,54 @@ class MainActivity : AppCompatActivity() {
     private fun startActivity(cls:Class<*>){
         val intent = Intent(this,cls)
         startActivity(intent)
+    }
+
+    private fun asyncGetDate(){
+        val deferred = lifecycleScope.async(Dispatchers.IO) {
+            Delivery.date = GetTimeQuery().timeServer().split("|").toTypedArray()[0]
+            Delivery.roundList.clear()
+            for(i in 0 until 31){
+                Delivery.roundList.add(i.toString())
+            }
+        }
+
+        lifecycleScope.launch(Dispatchers.Main) {
+            if (deferred.isActive) {
+                val progressDialogBuilder = Gvariable().createProgressDialog(this@MainActivity)
+
+                try {
+                    progressDialogBuilder.show()
+                    deferred.await()
+                } finally {
+                    progressDialogBuilder.cancel()
+                    startActivity(Delivery::class.java)
+                }
+            } else {
+                deferred.await()
+            }
+        }
+    }
+
+    private fun asyncOpenCasePacking(){
+        val deferred = lifecycleScope.async(Dispatchers.IO) {
+            OpenCasePacking.caseList = PackingQuery().getCaseNoByUser(Gvariable.userName.toString())
+            OpenCasePacking.totalCase = PackingQuery().getCountCaseByUser(Gvariable.userName.toString())
+        }
+
+        lifecycleScope.launch(Dispatchers.Main) {
+            if (deferred.isActive) {
+                val progressDialogBuilder = Gvariable().createProgressDialog(this@MainActivity)
+
+                try {
+                    progressDialogBuilder.show()
+                    deferred.await()
+                } finally {
+                    progressDialogBuilder.cancel()
+                    startActivity(OpenCasePacking::class.java)
+                }
+            } else {
+                deferred.await()
+            }
+        }
     }
 }
