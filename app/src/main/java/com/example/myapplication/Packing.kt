@@ -2,6 +2,7 @@ package com.example.myapplication
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
 import com.example.myapplication.DataQuery.DeliveryQuery
 import com.example.myapplication.DataQuery.PackingQuery
@@ -11,6 +12,7 @@ import kotlinx.coroutines.launch
 
 class Packing : AppCompatActivity() {
     companion object{
+        lateinit var cardViewBack: CardView
         var countCaseNo = 0
         var date = ""
         var orderNoList = ArrayList<String>()
@@ -19,6 +21,8 @@ class Packing : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_packing)
+
+        cardViewBack = findViewById(R.id.cardView_back)
     }
 
     private fun asyncDelete(){
@@ -66,5 +70,6 @@ class Packing : AppCompatActivity() {
         caseNoList.clear()
         caseNoList = PackingQuery().getListCaseNoByUser(Gvariable.userName.toString())
     }
+
 
 }

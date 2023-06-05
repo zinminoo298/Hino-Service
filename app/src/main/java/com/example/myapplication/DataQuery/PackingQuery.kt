@@ -312,4 +312,49 @@ class PackingQuery {
         return qty
     }
 
+    fun isSKB(partNo:String) : Boolean{
+        var resultSet: ResultSet? = null
+        var result = false
+        var sql = "SELECT [Part].SKB FROM [Part] WHERE [Part].PartNo = '$partNo'"
+        try{
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            resultSet = statement.executeQuery(sql)
+            result = if(resultSet.next()){
+                resultSet.getString("SKB") == "S"
+            } else{
+                false
+            }
+            statement.close()
+            Gvariable.conn!!.close()
+        }catch (e:Exception){
+            e.printStackTrace()
+            Gvariable.conn!!.close()
+            result  = false
+        }
+        return result
+    }
+
+    fun isEDP(partNo: String) : Boolean {
+        var resultSet: ResultSet? = null
+        var result = false
+        var sql = "SELECT [Part].EDP FROM [Part] with (nolock) WHERE [Part].PartNo = '$partNo'"
+        try{
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            resultSet = statement.executeQuery(sql)
+            result = if(resultSet.next()){
+                resultSet.getString("EDP") == "E"
+            } else{
+                false
+            }
+            statement.close()
+            Gvariable.conn!!.close()
+        }catch (e:Exception){
+            e.printStackTrace()
+            Gvariable.conn!!.close()
+            result  = false
+        }
+        return result
+    }
 }
