@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.app.DatePickerDialog
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -45,7 +46,16 @@ class  ReceiveSKB : AppCompatActivity() {
         onLoad()
 
         buttonList.setOnClickListener {
-
+            if(orderNoList.isEmpty()){
+                Gvariable().messageAlertDialog(
+                    this,
+                    "โปรดเลือก Order No.",
+                    layoutInflater
+                )
+                Gvariable().alarm(this)
+            }else{
+                asyncOrderList()
+            }
         }
 
         ediTextScanKanban.setOnKeyListener(View.OnKeyListener { _, _, event ->
@@ -66,6 +76,12 @@ class  ReceiveSKB : AppCompatActivity() {
                         ediTextScanKanban.requestFocus()
                     }
                 } else {
+                    Gvariable().messageAlertDialog(
+                        this,
+                        "กรุณาแสกนเอกสาร Serial Kanban",
+                        layoutInflater
+                    )
+                    Gvariable().alarm(this)
                     ediTextScanKanban.requestFocus()
                 }
             }
@@ -85,6 +101,29 @@ class  ReceiveSKB : AppCompatActivity() {
             datePicker()
         }
 
+    }
+
+    private fun asyncOrderList(){
+        val deferred = lifecycleScope.async(Dispatchers.IO) {
+            ListOrder.orderList.clear()
+            ListOrder.orderList = OrderDetailQuery().loadDataOrderDetail(spinnerOrderNo.selectedItem.toString())
+        }
+        lifecycleScope.launch(Dispatchers.Main) {
+            if (deferred.isActive) {
+                val progressDialogBuilder = Gvariable().createProgressDialog(this@ReceiveSKB)
+                try {
+                    progressDialogBuilder.show()
+                    deferred.await()
+
+                } finally {
+                    progressDialogBuilder.cancel()
+                    val intent = Intent(this@ReceiveSKB, ListOrder::class.java)
+                    startActivity(intent)
+                }
+            } else {
+                deferred.await()
+            }
+        }
     }
 
     private fun onLoad(){
@@ -109,11 +148,14 @@ class  ReceiveSKB : AppCompatActivity() {
                 } finally {
                     loadSpinnerOrderNo()
                     textViewOrderDate.text = currentDate
+                    ediTextScanKanban.requestFocus()
                     progressDialogBuilder.cancel()
                 }
             } else {
                 deferred.await()
-
+                loadSpinnerOrderNo()
+                textViewOrderDate.text = currentDate
+                ediTextScanKanban.requestFocus()
             }
         }
     }

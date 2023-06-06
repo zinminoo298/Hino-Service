@@ -3,16 +3,17 @@ package com.example.myapplication
 import android.app.Activity
 import android.app.ProgressDialog
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.myapplication.DataQuery.LoginQuery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import java.util.*
 
 class Login : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,6 +42,7 @@ class Login : AppCompatActivity() {
             ) {
                 val deferred = lifecycleScope.async(Dispatchers.IO) {
                     if (LoginQuery(this@Login, editTextUsername.text.toString(), editTextPassword.text.toString()).login()) {
+                        Gvariable.uniqueId = UUID.randomUUID().toString()
                         val intent = Intent(this@Login, MainActivity::class.java)
                         startActivity(intent)
                     }

@@ -27,6 +27,7 @@ class Gvariable {
         var conn: Connection? = null
         var driver = "net.sourceforge.jtds.jdbc.Driver"
         var connURL = ""
+        var uniqueId = ""
     }
 
     fun startConn(){

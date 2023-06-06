@@ -2,6 +2,7 @@ package com.example.myapplication.DataQuery
 
 import com.example.myapplication.DataModel.GetDetailSKBModel
 import com.example.myapplication.DataModel.GetOrderDetailModel
+import com.example.myapplication.DataModel.OrderListModel
 import com.example.myapplication.Gvariable
 import java.sql.Date
 import java.sql.ResultSet
@@ -158,5 +159,56 @@ class OrderDetailQuery {
             returnString = ""
         }
         return returnString
+    }
+
+    fun loadDataOrderDetail(orderNo:String) :ArrayList<OrderListModel>{
+        var orderList = ArrayList<OrderListModel>()
+        var result: ResultSet? = null
+        var sql = "Select OrderDetailId,OrderNo,OrderDate, KPBNo,  PartNo, PartName, OrderQty, ReceiveQty, PackQty, DeliveryQty " +
+                " FROM  V_PDA_SummaryRPD_by_Order " +
+                " Where 1=1 " +
+                " and OrderNo = '$orderNo' " +
+                " ORDER BY OrderNo,PartNo "
+        try{
+            orderList.clear()
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            result = statement.executeQuery(sql)
+            var i = 0
+            while(result.next()){
+                //add to data mode
+                i++
+                var no = i.toString()
+                val partNo = result.getString("PartNo")
+
+                val qty = if(result.getString("OrderQty") != null){
+                    result.getString("OrderQty")
+                }else{
+                    ""
+                }
+
+                val receive = if(result.getString("ReceiveQty") != null){
+                    result.getString("ReceiveQty")
+                }else{
+                    ""
+                }
+                val packing = if(result.getString("PackQty") != null){
+                    result.getString("PackQty")
+                }else{
+                    ""
+                }
+                val delivery = if(result.getString("DeliveryQty") != null){
+                    result.getString("DeliveryQty")
+                }else{
+                    ""
+                }
+                orderList.add(OrderListModel(no, partNo, qty, receive, packing, delivery))
+            }
+        }catch (e:Exception){
+            e.printStackTrace()
+            orderList.clear()
+            Gvariable.conn!!.close()
+        }
+        return orderList
     }
 }

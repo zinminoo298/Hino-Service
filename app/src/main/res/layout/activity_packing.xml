@@ -33,15 +33,21 @@
             android:textColor="@color/black"
             android:textSize="16sp" />
 
-        <Spinner
-            android:id="@+id/spinner_case_no"
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:layout_weight="0.65"
-            android:background="@android:drawable/editbox_background"
-            android:paddingStart="5dp"
-            android:paddingEnd="3dp" />
+            android:background="@android:drawable/editbox_background">
+            <Spinner
+                android:id="@+id/spinner_case_no"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:paddingStart="5dp"
+                android:paddingEnd="3dp" />
+        </LinearLayout>
+
     </LinearLayout>
 
     <LinearLayout
@@ -254,21 +260,24 @@
             android:layout_gravity="center"
             android:layout_weight="0.35"
             android:fontFamily="@font/poppins_medium"
-            android:text="Sticker :"
+            android:text="Order No :"
             android:textColor="@color/black"
             android:textSize="16sp" />
 
-        <Spinner
-            android:id="@+id/spinner_order_no"
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:layout_weight="0.65"
-            android:inputType="number"
-            android:singleLine="true"
-            android:background="@android:drawable/editbox_background"
-            android:paddingStart="5dp"
-            android:paddingEnd="3dp" />
+            android:background="@android:drawable/editbox_background">
+            <Spinner
+                android:id="@+id/spinner_order_no"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:paddingStart="5dp"
+                android:paddingEnd="3dp" />
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -290,12 +299,12 @@
             android:layout_gravity="center"
             android:layout_weight="0.35"
             android:fontFamily="@font/poppins_medium"
-            android:text="Sticker :"
+            android:text="Part No :"
             android:textColor="@color/black"
             android:textSize="16sp" />
 
-        <EditText
-            android:id="@+id/editText_part_no"
+        <TextView
+            android:id="@+id/textView_part_no"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_gravity="center"

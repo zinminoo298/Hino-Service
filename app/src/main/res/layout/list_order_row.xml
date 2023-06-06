@@ -1,22 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ListOrder"
-    android:orientation="vertical"
-    android:layout_margin="5dp">
-
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="3dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:weightSum="1"
-        android:padding="5dp">
+        android:weightSum="1">
 
         <TextView
+            android:id="@+id/textview_no"
             android:layout_width="0dp"
             android:layout_height="30dp"
             android:layout_weight="0.15"
@@ -25,9 +20,10 @@
             android:paddingStart="5dp"
             android:text="No"
             android:textSize="16sp"
-            android:textColor="@color/red" />
+            android:textColor="@color/black" />
 
         <TextView
+            android:id="@+id/textview_part_no"
             android:layout_width="0dp"
             android:layout_height="30dp"
             android:layout_weight="0.3"
@@ -36,9 +32,10 @@
             android:paddingLeft="5dp"
             android:text="Part No"
             android:textSize="16sp"
-            android:textColor="@color/red" />
+            android:textColor="@color/black" />
 
         <TextView
+            android:id="@+id/textview_qty"
             android:layout_width="0dp"
             android:layout_height="30dp"
             android:layout_weight="0.175"
@@ -47,9 +44,10 @@
             android:paddingLeft="5dp"
             android:text="Qty"
             android:textSize="16sp"
-            android:textColor="@color/red" />
+            android:textColor="@color/black" />
 
         <TextView
+            android:id="@+id/textview_r"
             android:layout_width="0dp"
             android:layout_height="30dp"
             android:layout_weight="0.125"
@@ -58,9 +56,10 @@
             android:paddingLeft="5dp"
             android:text="R"
             android:textSize="16sp"
-            android:textColor="@color/red" />
+            android:textColor="@color/black" />
 
         <TextView
+            android:id="@+id/textview_p"
             android:layout_width="0dp"
             android:layout_height="30dp"
             android:layout_weight="0.125"
@@ -69,9 +68,10 @@
             android:paddingLeft="5dp"
             android:text="P"
             android:textSize="16sp"
-            android:textColor="@color/red" />
+            android:textColor="@color/black" />
 
         <TextView
+            android:id="@+id/textview_d"
             android:layout_width="0dp"
             android:layout_height="30dp"
             android:layout_weight="0.125"
@@ -80,21 +80,7 @@
             android:paddingLeft="5dp"
             android:text="D"
             android:textSize="16sp"
-            android:textColor="@color/red" />
-
-
+            android:textColor="@color/black" />
     </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginBottom="7dp"
-        android:background="@color/blue" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerview_order"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
 
 </LinearLayout>

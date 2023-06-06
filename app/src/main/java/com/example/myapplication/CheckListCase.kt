@@ -6,9 +6,12 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.InputFilter
+import android.text.Spanned
 import android.view.KeyEvent
 import android.view.View
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -50,6 +53,8 @@ class CheckListCase : AppCompatActivity() {
         recyclerView = findViewById(R.id.recyclerview)
         packingInfoList = ArrayList<GetPackingInfoListModel>()
 
+        editTextQty.filters = arrayOf<InputFilter>(MinMaxFilter(0,999))
+
         editTextCaseNo.setOnKeyListener(View.OnKeyListener { _, _, event ->
             if (event.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
                 val sCaseNo = editTextCaseNo.text.toString().trim()
@@ -73,17 +78,53 @@ class CheckListCase : AppCompatActivity() {
             }
             false
         })
-        buttonSave.setOnClickListener {
-            val sCaseNo = editTextCaseNo.text.toString().trim()
-            val sPartNo = textViewPartNo.text.toString().trim()
-        }
 
         buttonUp.setOnClickListener {
-            editTextQty.setText("${ (Integer.parseInt(editTextQty.text.toString()) + 1) }")
+            if(editTextQty.text.toString().isEmpty()){
+                editTextQty.setText("1")
+            }
+            else{
+                val qty = Integer.parseInt(editTextQty.text.toString())
+                if(qty >= 999){
+                    editTextQty.setText("999")
+                }
+                else{
+                    editTextQty.setText("${ (Integer.parseInt(editTextQty.text.toString()) + 1) }")
+                }
+            }
         }
 
         buttonDown.setOnClickListener {
-            editTextQty.setText("${ (Integer.parseInt(editTextQty.text.toString()) - 1) }")
+            if(editTextQty.text.toString().isEmpty()){
+                editTextQty.setText("1")
+            }
+            else{
+                val qty = Integer.parseInt(editTextQty.text.toString())
+                if(qty <= 0){
+                    editTextQty.setText("0")
+                }
+                else{
+                    editTextQty.setText("${ (Integer.parseInt(editTextQty.text.toString()) - 1) }")
+                }
+            }
+        }
+
+        buttonSave.setOnClickListener {
+            if(editTextQty.text.toString().isEmpty()){
+                editTextQty.setText("0")
+            }
+            var sCaseNo = editTextCaseNo.text.toString()
+            var sPartNo = textViewPartNo.text.toString()
+            var sOrderNo = spinnerOrderNo.selectedItem.toString()
+            var qty = editTextQty.text.toString().trim()
+            var recQty = 0
+
+            if(sCaseNo.isNotEmpty()){
+                alertDialog()
+            }else{
+                Gvariable().alarm(this)
+                Gvariable().messageAlertDialog(this, "กรุณาแสกน CaseNo", layoutInflater)
+            }
         }
     }
 
@@ -94,6 +135,7 @@ class CheckListCase : AppCompatActivity() {
             if(sCaseNoStatus != 1){
                 //clear spinners
                 //set qty = 0
+                packingInfoList.clear()
                 packingInfoList = PackingQuery().getListPackingInfoByCaseNo(caseNo)
                 if(packingInfoList.isNotEmpty()){
                     val qty = PackingQuery().getTotalPackQtyByCaseNo(caseNo).toString()+" K/B "
@@ -189,7 +231,7 @@ class CheckListCase : AppCompatActivity() {
 
     private fun asyncSave(){
         val deferred = lifecycleScope.async(Dispatchers.IO) {
-
+            save()
         }
         lifecycleScope.launch(Dispatchers.Main) {
             if (deferred.isActive) {
@@ -199,12 +241,149 @@ class CheckListCase : AppCompatActivity() {
                     deferred.await()
 
                 } finally {
+                    loadRecyclerView()
                     progressDialogBuilder.cancel()
                 }
             } else {
                 deferred.await()
 
             }
+        }
+    }
+
+    private fun save(){
+        try{
+            var sCaseNo = editTextCaseNo.text.toString()
+            var sPartNo = textViewPartNo.text.toString()
+            var sOrderNo = spinnerOrderNo.selectedItem.toString()
+            var qty = Integer.parseInt(editTextQty.text.toString().trim())
+            var recQty = 0
+
+            //case Serial K/B
+            if(sPartNo.length == 15){
+                recQty = PackingQuery().getQtyInOrder(sOrderNo, sPartNo)
+                when {
+                    qty > recQty -> {
+                        Gvariable().alarm(this)
+                        Gvariable().messageOkDialog(this, "จำนวนต้องไม่เกิน Receive Qty", layoutInflater)
+                        Handler(Looper.getMainLooper()).post(){
+                            editTextQty.setText("1")
+                            editTextQty.requestFocus()
+                        }
+                    }
+
+                    qty > 1 -> {
+                        Gvariable().alarm(this)
+                        Gvariable().messageOkDialog(this, "กรณี Serial No. จำนวนต้องไม่เกิน 1", layoutInflater)
+                        Handler(Looper.getMainLooper()).post(){
+                            editTextQty.setText("1")
+                            editTextQty.requestFocus()
+                        }
+                    }
+
+                    qty == 0 -> {
+                        if(PackingQuery().updateOrderProcessSKB(sOrderNo, sPartNo)){
+                            PackingQuery().deletePackingInformationSKB(sCaseNo, sOrderNo, sPartNo)
+                            Gvariable().alarm(this)
+                            Gvariable().messageOkDialog(this, "บบันทึกข้อมูลเรียบร้อย", layoutInflater)
+                            Handler(Looper.getMainLooper()).post(){
+                                orderNoList.clear()
+                                setOrderNoSpinner(this)
+                                textViewPartNo.text = ""
+                                editTextQty.setText("0")
+                            }
+                            packingInfoList.clear()
+                            packingInfoList = PackingQuery().getListPackingInfoByCaseNo(sCaseNo)
+                        }
+                    }
+
+                    else -> {
+                        Gvariable().alarm(this)
+                        Gvariable().messageOkDialog(this, "บันทึกข้อมูลเรียบร้อย", layoutInflater)
+                        Handler(Looper.getMainLooper()).post(){
+                            orderNoList.clear()
+                            setOrderNoSpinner(this)
+                            textViewPartNo.text = ""
+                            editTextQty.setText("0")
+                        }
+                        packingInfoList.clear()
+                        packingInfoList = PackingQuery().getListPackingInfoByCaseNo(sCaseNo)
+                    }
+                }
+            }
+            //Case Non Serial K/B
+            else{
+                recQty = PackingQuery().getQtyInOrder(sOrderNo, sPartNo)
+                val packQty:Int = PackingQuery().getTotalPackQtyNotInCaseNo(sOrderNo, sPartNo, sCaseNo)
+                if( (qty + packQty) > recQty){
+                    Gvariable().alarm(this)
+                    Gvariable().messageOkDialog(this, "จำนวนต้องไม่เกิน Receive Qty", layoutInflater)
+                    Handler(Looper.getMainLooper()).post(){
+                        editTextQty.setText("0")
+                        editTextQty.requestFocus()
+                    }
+                }
+                var sFlag = false
+                if(qty >= 0){
+
+                }
+            }
+
+
+        }catch (e:Exception){
+            e.printStackTrace()
+        }
+    }
+
+    private fun alertDialog(){
+        val builder = AlertDialog.Builder(this)
+        val inflater = layoutInflater
+        val view = inflater.inflate(R.layout.alert_dialog   , null)
+        builder.setView(view)
+        val dialog = builder.create()
+        dialog.show()
+        dialog.setCancelable(false)
+        val buttonYes = view.findViewById<Button>(R.id.button_yes)
+        val buttonNo = view.findViewById<Button>(R.id.button_no)
+        val textView = view.findViewById<TextView>(R.id.txt_text)
+
+        textView.text = "ต้องการบันทึกข้อมูล?"
+
+        buttonYes.setOnClickListener {
+            dialog.dismiss()
+            asyncSave()
+        }
+        buttonNo.setOnClickListener {
+            dialog.dismiss()
+        }
+    }
+
+    inner class MinMaxFilter() : InputFilter {
+        private var intMin: Int = 0
+        private var intMax: Int = 0
+
+        // Initialized
+        constructor(minValue: Int, maxValue: Int) : this() {
+            this.intMin = minValue
+            this.intMax = maxValue
+        }
+
+        override fun filter(source: CharSequence, start: Int, end: Int, dest: Spanned, dStart: Int, dEnd: Int): CharSequence? {
+            try {
+                val input = Integer.parseInt(dest.toString() + source.toString())
+                if (isInRange(intMin, intMax, input)) {
+                    return null
+                }
+            } catch (e: NumberFormatException) {
+                e.printStackTrace()
+            }
+            return ""
+        }
+
+        // Check if input c is in between min a and max b and
+        // returns corresponding boolean
+        private fun isInRange(a: Int, b: Int, c: Int): Boolean {
+            return if (b > a) c in a..b else c in b..a
         }
     }
 

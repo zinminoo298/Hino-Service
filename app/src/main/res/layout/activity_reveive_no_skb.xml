@@ -38,6 +38,7 @@
             android:textSize="18sp"
             android:gravity="center_vertical"
             android:paddingLeft="5dp"
+            android:singleLine="true"
             android:background="@android:drawable/editbox_background"/>
     </LinearLayout>
 
@@ -158,12 +159,25 @@
             android:id="@+id/editText_receiveQty"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.6"
+            android:layout_weight="0.4"
             android:layout_gravity="center"
             android:textColor="@color/black"
             android:textSize="16sp"
             android:inputType="number"
             android:background="@android:drawable/editbox_background"/>
+
+        <Button
+            android:id="@+id/imageButton_up"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.1"
+            android:background="@mipmap/arrow_up"/>
+        <Button
+            android:id="@+id/imageButton_down"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.1"
+            android:background="@mipmap/arrow_down"/>
     </LinearLayout>
 
     <LinearLayout
@@ -261,7 +275,7 @@
             android:layout_weight="0.6"
             android:background="@android:drawable/editbox_background"
             android:layout_gravity="center"
-            android:textColor="@color/black"
+            android:textColor="@color/blue"
             android:textSize="16sp" />
     </LinearLayout>
 
@@ -272,35 +286,19 @@
         android:layout_marginStart="15dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="15dp"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout6" >
 
-        <TextView
-            android:visibility="invisible"
-            android:layout_width="0dp"
+        <Button
+            android:id="@+id/button_list"
+            android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.4"
-            android:fontFamily="@font/poppins_medium"
-            android:text="SKB"
-            android:textColor="@color/tea"
-            android:textSize="36sp"
-            android:gravity="center"/>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.6">
-            <Button
-                android:id="@+id/button_list"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/blue"
-                android:text="List"
-                android:layout_gravity="center"/>
-        </LinearLayout>
+            android:backgroundTint="@color/blue"
+            android:text="List"
+            android:layout_gravity="center"/>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

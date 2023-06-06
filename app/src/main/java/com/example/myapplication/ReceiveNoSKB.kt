@@ -1,12 +1,17 @@
 package com.example.myapplication
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.InputFilter
+import android.text.Spanned
 import android.view.KeyEvent
 import android.view.View
 import android.widget.*
+import androidx.cardview.widget.CardView
+import androidx.core.view.isEmpty
 import androidx.lifecycle.lifecycleScope
 import com.example.myapplication.DataQuery.DeliveryQuery
 import com.example.myapplication.DataQuery.GetTimeQuery
@@ -28,6 +33,9 @@ class ReceiveNoSKB : AppCompatActivity() {
         lateinit var textViewTotalReceive: TextView
         lateinit var buttonList: Button
         lateinit var buttonSave: Button
+        lateinit var buttonUp: Button
+        lateinit var buttonDown: Button
+        lateinit var cardViewBack: CardView
         var date = ""
         var currentDate = ""
         var partNo = ""
@@ -49,8 +57,13 @@ class ReceiveNoSKB : AppCompatActivity() {
         textViewPartNo = findViewById(R.id.textView_partNo)
         textViewPds = findViewById(R.id.textview_pds)
         buttonSave = findViewById(R.id.btn_save)
+        buttonList = findViewById(R.id.button_list)
+        buttonUp = findViewById(R.id.imageButton_up)
+        buttonDown = findViewById(R.id.imageButton_down)
+        cardViewBack = findViewById(R.id.cardView_back)
 
         asyncGetDate()
+        editTextScanKanban.requestFocus()
 
         editTextScanKanban.setOnKeyListener(View.OnKeyListener { _, _, event ->
             if (event.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
@@ -82,7 +95,79 @@ class ReceiveNoSKB : AppCompatActivity() {
             asyncSave()
         }
 
+        buttonList.setOnClickListener {
+            if(orderNoList.isEmpty()){
+                Gvariable().messageAlertDialog(
+                    this,
+                    "โปรดเลือก Order No.",
+                    layoutInflater
+                )
+                Gvariable().alarm(this)
+            }else{
+                asyncOrderList()
+            }
+        }
 
+        cardViewBack.setOnClickListener{
+            finish()
+            super.onBackPressed()
+        }
+
+        editTextReceiveQty.setText("1")
+        editTextReceiveQty.filters = arrayOf<InputFilter>(MinMaxFilter(1,10000))
+
+        buttonUp.setOnClickListener {
+            if(editTextReceiveQty.text.toString().isEmpty()){
+                editTextReceiveQty.setText("1")
+            }
+            else{
+                val qty = Integer.parseInt(editTextReceiveQty.text.toString())
+                if(qty >= 100000){
+                    editTextReceiveQty.setText("100000")
+                }
+                else{
+                    editTextReceiveQty.setText("${ (Integer.parseInt(editTextReceiveQty.text.toString()) + 1) }")
+                }
+            }
+        }
+
+        buttonDown.setOnClickListener {
+            if(editTextReceiveQty.text.toString().isEmpty()){
+                editTextReceiveQty.setText("1")
+            }
+            else{
+                val qty = Integer.parseInt(editTextReceiveQty.text.toString())
+                if(qty <= 1){
+                    editTextReceiveQty.setText("1")
+                }
+                else{
+                    editTextReceiveQty.setText("${ (Integer.parseInt(editTextReceiveQty.text.toString()) - 1) }")
+                }
+            }
+        }
+    }
+
+    private fun asyncOrderList(){
+        val deferred = lifecycleScope.async(Dispatchers.IO) {
+            ListOrder.orderList.clear()
+            ListOrder.orderList = OrderDetailQuery().loadDataOrderDetail(spinnerOrderNo.selectedItem.toString())
+        }
+        lifecycleScope.launch(Dispatchers.Main) {
+            if (deferred.isActive) {
+                val progressDialogBuilder = Gvariable().createProgressDialog(this@ReceiveNoSKB)
+                try {
+                    progressDialogBuilder.show()
+                    deferred.await()
+
+                } finally {
+                    progressDialogBuilder.cancel()
+                    val intent = Intent(this@ReceiveNoSKB, ListOrder::class.java)
+                    startActivity(intent)
+                }
+            } else {
+                deferred.await()
+            }
+        }
     }
 
     private fun setSpinnerOrderNo(){
@@ -138,7 +223,7 @@ class ReceiveNoSKB : AppCompatActivity() {
     private fun scanKanBan(){
         var inputBarcode = editTextScanKanban.text.toString().split("|").toTypedArray()
         if(inputBarcode.isNotEmpty()){
-            partNo = inputBarcode[0].substring(3, 8) +"-"+ inputBarcode[0].substring(8, 13)
+            partNo = inputBarcode[0].substring(2, 7) +"-"+ inputBarcode[0].substring(7, 12)
             pds = inputBarcode[11]
             receiveQty = Integer.parseInt(inputBarcode[13])
         }else{
@@ -157,6 +242,9 @@ class ReceiveNoSKB : AppCompatActivity() {
                 if(DeliveryQuery().checkOrderByPds(pds, partNo)){
                     listOrderNoByPDS(pds, partNo)
                 }else{
+                    Handler(Looper.getMainLooper()).post {
+                        editTextReceiveQty.setText("1")
+                    }
                     listOrderNoByPHT(partNo)
                 }
 
@@ -168,7 +256,7 @@ class ReceiveNoSKB : AppCompatActivity() {
                 }
             }
 
-            if(spinnerOrderNo.selectedItem.toString() == ""){
+            if(spinnerOrderNo.isEmpty()){
                 Handler(Looper.getMainLooper()).post {
                     spinnerOrderNo.requestFocus()
                 }
@@ -203,9 +291,9 @@ class ReceiveNoSKB : AppCompatActivity() {
 
                 } finally {
                     setSpinnerOrderNo()
-                    progressDialogBuilder.cancel()
                     editTextScanKanban.selectAll()
                     editTextScanKanban.requestFocus()
+                    progressDialogBuilder.cancel()
                 }
             } else {
                 deferred.await()
@@ -242,7 +330,7 @@ class ReceiveNoSKB : AppCompatActivity() {
                 try{
                     var inputBarcode = editTextScanKanban.text.split("|").toTypedArray()
                     if(inputBarcode.isNotEmpty()){
-                        partNo = "${inputBarcode[0].substring(3,8)}-${inputBarcode[0].substring(8,13)}"
+                        partNo = "${inputBarcode[0].substring(2,7)}-${inputBarcode[0].substring(7,12)}"
                         docSerial = partNo
                         pds = inputBarcode[11]
                     }
@@ -272,16 +360,20 @@ class ReceiveNoSKB : AppCompatActivity() {
                                 newQty > orderQty -> {
                                     Gvariable().alarm(this)
                                     Gvariable().messageAlertDialog(this, "Error: รับ Part เกินจำนวน (Receive:${newQty}/Order ${orderQty})", layoutInflater)
-                                    //lbtotal.Text = OrderProcessQty.ToString
+                                    Handler(Looper.getMainLooper()).post(){
+                                        textViewTotalReceive.text = orderProcessQty.toString()
+                                    }
                                 }
                                 else -> {
                                     if(getOrderList.isEmpty()){
-                                        if(OrderProcessQuery().save("", orderDetailId, orderNo, docSerial)){
-                                            OrderProcessQuery().updateOrderProcessReceive("", Integer.parseInt(editTextReceiveQty.text.toString()))
+                                        if(OrderProcessQuery().save(Gvariable.uniqueId, orderDetailId, orderNo, docSerial)){
+                                            OrderProcessQuery().updateOrderProcessReceive(Gvariable.uniqueId, Integer.parseInt(editTextReceiveQty.text.toString()))
                                             Handler(Looper.getMainLooper()).post {
                                                 textViewPartNo.text = partNo
                                                 editTextReceiveQty.setText("1")
-                                                //lbtotal.Text = NewQty.ToString
+                                                Handler(Looper.getMainLooper()).post(){
+                                                    textViewTotalReceive.text = newQty.toString()
+                                                }
                                             }
                                         }
                                     }
@@ -302,7 +394,7 @@ class ReceiveNoSKB : AppCompatActivity() {
                                                     Handler(Looper.getMainLooper()).post {
                                                         textViewPartNo.text = getOrderList[i].partNo
                                                         editTextReceiveQty.setText("1")
-                                                        //lbtotal.Text = Strtotal
+                                                        textViewTotalReceive.text = strTotal
                                                     }
                                                 }
                                             }
@@ -314,7 +406,7 @@ class ReceiveNoSKB : AppCompatActivity() {
                                             Handler(Looper.getMainLooper()).post {
                                                 textViewPartNo.text = getOrderList[0].partNo
                                                 editTextReceiveQty.setText("1")
-                                                //lbtotal.Text = Strtotal
+                                                textViewTotalReceive.text = strTotal
                                             }
                                         }
                                     }
@@ -355,6 +447,35 @@ class ReceiveNoSKB : AppCompatActivity() {
     private fun listOrderNoByPHT(partNo:String){
         orderNoList.clear()
         orderNoList = DeliveryQuery().showOrderByOrder(partNo)
+    }
+
+    inner class MinMaxFilter() : InputFilter {
+        private var intMin: Int = 0
+        private var intMax: Int = 0
+
+        // Initialized
+        constructor(minValue: Int, maxValue: Int) : this() {
+            this.intMin = minValue
+            this.intMax = maxValue
+        }
+
+        override fun filter(source: CharSequence, start: Int, end: Int, dest: Spanned, dStart: Int, dEnd: Int): CharSequence? {
+            try {
+                val input = Integer.parseInt(dest.toString() + source.toString())
+                if (isInRange(intMin, intMax, input)) {
+                    return null
+                }
+            } catch (e: NumberFormatException) {
+                e.printStackTrace()
+            }
+            return ""
+        }
+
+        // Check if input c is in between min a and max b and
+        // returns corresponding boolean
+        private fun isInRange(a: Int, b: Int, c: Int): Boolean {
+            return if (b > a) c in a..b else c in b..a
+        }
     }
 
 }

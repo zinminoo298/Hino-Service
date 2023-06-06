@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
@@ -60,7 +61,8 @@ class OpenCasePacking : AppCompatActivity() {
         }
 
         buttonNext.setOnClickListener {
-            asyncNext()
+//            asyncNext()
+            Toast.makeText(this, "Packing function is under testing", Toast.LENGTH_SHORT).show()
         }
 
         editTextCaseNo.setOnKeyListener(View.OnKeyListener { _, _, event ->
@@ -213,7 +215,7 @@ class OpenCasePacking : AppCompatActivity() {
     private fun asyncPacking(){
         val deferred = lifecycleScope.async(Dispatchers.IO) {
             Packing.date = GetTimeQuery().timeServer().split("|").toTypedArray()[1]
-            Packing().listOrderNo()
+            Packing().listOrderNo(Packing.date)
             Packing().listCaseNo()
             Packing.countCaseNo = PackingQuery().getCaseNoList(Gvariable.userName.toString())
         }

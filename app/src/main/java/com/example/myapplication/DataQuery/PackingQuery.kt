@@ -312,6 +312,92 @@ class PackingQuery {
         return qty
     }
 
+    fun getQtyInOrder(orderNo:String, partNo: String) : Int{
+        var resultSet: ResultSet? = null
+        var qty = 0
+        var sql = "Select  dbo.PDA_Delivery_getReceiveQtybyOrderNoPartNo('$orderNo','$partNo') AS QtyOrder"
+        try{
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            resultSet = statement.executeQuery(sql)
+            qty = if(resultSet.next()){
+                if(resultSet.getInt("QtyOrder") != null){
+                    resultSet.getInt("QtyOrder")
+                }else{
+                    0
+                }
+            } else{
+                0
+            }
+            statement.close()
+            Gvariable.conn!!.close()
+        }catch (e:Exception){
+            e.printStackTrace()
+            Gvariable.conn!!.close()
+            qty  = 0
+        }
+        return qty
+    }
+
+    fun updateOrderProcessSKB(orderNo: String, partNo: String) :Boolean {
+        val sql = "EXEC  spPDA_Packing_UpdateOrderProcessSKB '$orderNo','$partNo' ,''"
+        return try{
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            statement.executeQuery(sql)
+            statement.close()
+            Gvariable.conn!!.close()
+            true
+        }catch (e:Exception){
+            e.printStackTrace()
+            Gvariable.conn!!.close()
+            false
+        }
+    }
+
+    fun deletePackingInformationSKB(caseNo:String, orderNo: String, partNo: String) : Boolean{
+        val sql = "EXEC  spPDA_Packing_UpdatePackingInfoSKB '$caseNo','$orderNo','$partNo' ,''"
+        return try{
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            statement.executeQuery(sql)
+            statement.close()
+            Gvariable.conn!!.close()
+            true
+        }catch (e:Exception){
+            e.printStackTrace()
+            Gvariable.conn!!.close()
+            false
+        }
+    }
+
+    fun getTotalPackQtyNotInCaseNo(orderNo:String, partNo: String, caseNo: String) : Int {
+        var resultSet: ResultSet? = null
+        var qty = 0
+        var sql = "Select  dbo.PDA_Packing_getTotalPackqtynotinCaseNo('$orderNo','$partNo','$caseNo') As intPackQty "
+        try{
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            resultSet = statement.executeQuery(sql)
+            qty = if(resultSet.next()){
+                if(resultSet.getInt("intPackQty") != null){
+                    resultSet.getInt("intPackQty")
+                }else{
+                    0
+                }
+            } else{
+                0
+            }
+            statement.close()
+            Gvariable.conn!!.close()
+        }catch (e:Exception){
+            e.printStackTrace()
+            Gvariable.conn!!.close()
+            qty  = 0
+        }
+        return qty
+    }
+
     fun isSKB(partNo:String) : Boolean{
         var resultSet: ResultSet? = null
         var result = false
