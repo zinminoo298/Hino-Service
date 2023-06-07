@@ -2,6 +2,7 @@ package com.example.myapplication
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.Telephony.Mms.Part
 import android.view.KeyEvent
 import android.view.View
 import android.widget.ArrayAdapter
@@ -65,14 +66,28 @@ class Packing : AppCompatActivity() {
                                 var barcodeType = textViewBarcodeType.text.toString()
                                 when (barcodeType) {
                                     "2D" -> {
-
-                                    }
-
-                                    "SKB" -> {
-
+                                        val inputBarcode = editTextKB.text.toString().split("|").toTypedArray()
+                                        if(inputBarcode.isNotEmpty()){
+                                            editTextQty.setText(inputBarcode[13])
+                                            val kb = editTextKB.text.toString().trim()
+                                            PartNo = kb.substring(2,7)+"-"+kb.substring(7,12)
+                                            // button save visible
+                                            // edittextQty visible
+                                            //spinnerOrder not visible
+                                            // lblW not visible
+                                        }
                                     }
 
                                     "PHT" -> {
+                                        val partNo = editTextKB.text.toString().trim().uppercase()
+                                        PartNo = partNo.substring(0,10)
+                                        // button save visible
+                                        // edittextQty visible
+                                        //spinnerOrder not visible
+                                        // lblW not visible
+                                    }
+
+                                    "SKB" -> {
 
                                     }
                                 }
@@ -202,6 +217,21 @@ class Packing : AppCompatActivity() {
         }
     }
 
+    fun checkSKB(){
+        if(PackingQuery().isSKB(PartNo)){
+            if(editTextKB.text.toString().length == 15){
+                if(){
+
+                }
+            }
+            else{
+                Gvariable().alarm(this)
+                Gvariable().messageAlertDialog(this, "Part No. เป็น SKB \n กรุณาใช้เอกสาร Serial Kanban", layoutInflater)
+                editTextKB.setText("")
+                editTextKB.requestFocus()
+            }
+        }
+    }
     fun listOrderNo(orderDate:String){
         orderNoList.clear()
         val showOrderList = DeliveryQuery().showOrder( orderDate, "", "")
