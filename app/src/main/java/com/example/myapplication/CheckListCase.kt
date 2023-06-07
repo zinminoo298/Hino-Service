@@ -12,6 +12,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
+import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -36,7 +37,9 @@ class CheckListCase : AppCompatActivity() {
         lateinit var recyclerView: RecyclerView
         lateinit var viewAdapter: RecyclerView.Adapter<*>
         lateinit var viewManager: RecyclerView.LayoutManager
+        lateinit var cardView: CardView
         var orderNoList = ArrayList<String>()
+        var noSKBUpdate = false
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +54,7 @@ class CheckListCase : AppCompatActivity() {
         buttonDown = findViewById(R.id.imageButton_down)
         buttonSave = findViewById(R.id.button_save)
         recyclerView = findViewById(R.id.recyclerview)
+        cardView = findViewById(R.id.cardView_back)
         packingInfoList = ArrayList<GetPackingInfoListModel>()
 
         editTextQty.filters = arrayOf<InputFilter>(MinMaxFilter(0,999))
@@ -114,10 +118,6 @@ class CheckListCase : AppCompatActivity() {
                 editTextQty.setText("0")
             }
             var sCaseNo = editTextCaseNo.text.toString()
-            var sPartNo = textViewPartNo.text.toString()
-            var sOrderNo = spinnerOrderNo.selectedItem.toString()
-            var qty = editTextQty.text.toString().trim()
-            var recQty = 0
 
             if(sCaseNo.isNotEmpty()){
                 alertDialog()
@@ -125,6 +125,11 @@ class CheckListCase : AppCompatActivity() {
                 Gvariable().alarm(this)
                 Gvariable().messageAlertDialog(this, "กรุณาแสกน CaseNo", layoutInflater)
             }
+        }
+
+        cardView.setOnClickListener {
+            finish()
+            super.onBackPressed()
         }
     }
 
@@ -229,9 +234,20 @@ class CheckListCase : AppCompatActivity() {
         spinnerOrderNo.adapter = arrayAdapter
     }
 
-    private fun asyncSave(){
+    private fun asyncUpdateNoSKB(){
         val deferred = lifecycleScope.async(Dispatchers.IO) {
-            save()
+            val sCaseNo = editTextCaseNo.text.toString()
+            val sPartNo = textViewPartNo.text.toString()
+            val sOrderNo = spinnerOrderNo.selectedItem.toString()
+            val qty = Integer.parseInt(editTextQty.text.toString().trim())
+            PackingQuery().updatePackingInformationNoSKB(sCaseNo, sOrderNo, sPartNo, qty, Gvariable.userName.toString())
+            if(PackingQuery().updateOrderProcessNoSKB(sOrderNo, sPartNo, qty, Gvariable.userName.toString(), sCaseNo)){
+                Gvariable().messageOkDialog(this@CheckListCase,"บันทึกข้อมูลเรียบร้อย", layoutInflater)
+                Handler(Looper.getMainLooper()).post(){
+                    textViewPartNo.text = ""
+                    editTextQty.setText("0")
+                }
+            }
         }
         lifecycleScope.launch(Dispatchers.Main) {
             if (deferred.isActive) {
@@ -251,8 +267,34 @@ class CheckListCase : AppCompatActivity() {
         }
     }
 
+    private fun asyncSave(){
+        val deferred = lifecycleScope.async(Dispatchers.IO) {
+            save()
+        }
+        lifecycleScope.launch(Dispatchers.Main) {
+            if (deferred.isActive) {
+                val progressDialogBuilder = Gvariable().createProgressDialog(this@CheckListCase)
+                try {
+                    progressDialogBuilder.show()
+                    deferred.await()
+
+                } finally {
+                    loadRecyclerView()
+                    progressDialogBuilder.cancel()
+                    if(noSKBUpdate){
+                        alertDialogNoSKBUpdate()
+                    }
+                }
+            } else {
+                deferred.await()
+
+            }
+        }
+    }
+
     private fun save(){
         try{
+            noSKBUpdate = false
             var sCaseNo = editTextCaseNo.text.toString()
             var sPartNo = textViewPartNo.text.toString()
             var sOrderNo = spinnerOrderNo.selectedItem.toString()
@@ -265,7 +307,7 @@ class CheckListCase : AppCompatActivity() {
                 when {
                     qty > recQty -> {
                         Gvariable().alarm(this)
-                        Gvariable().messageOkDialog(this, "จำนวนต้องไม่เกิน Receive Qty", layoutInflater)
+                        Gvariable().messageAlertDialog(this, "จำนวนต้องไม่เกิน Receive Qty", layoutInflater)
                         Handler(Looper.getMainLooper()).post(){
                             editTextQty.setText("1")
                             editTextQty.requestFocus()
@@ -274,7 +316,7 @@ class CheckListCase : AppCompatActivity() {
 
                     qty > 1 -> {
                         Gvariable().alarm(this)
-                        Gvariable().messageOkDialog(this, "กรณี Serial No. จำนวนต้องไม่เกิน 1", layoutInflater)
+                        Gvariable().messageAlertDialog(this, "กรณี Serial No. จำนวนต้องไม่เกิน 1", layoutInflater)
                         Handler(Looper.getMainLooper()).post(){
                             editTextQty.setText("1")
                             editTextQty.requestFocus()
@@ -284,7 +326,6 @@ class CheckListCase : AppCompatActivity() {
                     qty == 0 -> {
                         if(PackingQuery().updateOrderProcessSKB(sOrderNo, sPartNo)){
                             PackingQuery().deletePackingInformationSKB(sCaseNo, sOrderNo, sPartNo)
-                            Gvariable().alarm(this)
                             Gvariable().messageOkDialog(this, "บบันทึกข้อมูลเรียบร้อย", layoutInflater)
                             Handler(Looper.getMainLooper()).post(){
                                 orderNoList.clear()
@@ -298,7 +339,6 @@ class CheckListCase : AppCompatActivity() {
                     }
 
                     else -> {
-                        Gvariable().alarm(this)
                         Gvariable().messageOkDialog(this, "บันทึกข้อมูลเรียบร้อย", layoutInflater)
                         Handler(Looper.getMainLooper()).post(){
                             orderNoList.clear()
@@ -317,19 +357,26 @@ class CheckListCase : AppCompatActivity() {
                 val packQty:Int = PackingQuery().getTotalPackQtyNotInCaseNo(sOrderNo, sPartNo, sCaseNo)
                 if( (qty + packQty) > recQty){
                     Gvariable().alarm(this)
-                    Gvariable().messageOkDialog(this, "จำนวนต้องไม่เกิน Receive Qty", layoutInflater)
+                    Gvariable().messageAlertDialog(this, "จำนวนต้องไม่เกิน Receive Qty", layoutInflater)
                     Handler(Looper.getMainLooper()).post(){
                         editTextQty.setText("0")
                         editTextQty.requestFocus()
                     }
                 }
-                var sFlag = false
-                if(qty >= 0){
 
+                if(qty >= 0){
+                    noSKBUpdate = true
+                }else{
+                    Gvariable().alarm(this)
+                    Gvariable().messageAlertDialog(this, "จำนวนต้องมากกว่าหรือเท่ากับ 0", layoutInflater)
+                    Handler(Looper.getMainLooper()).post(){
+                        editTextQty.setText("0")
+                        editTextQty.requestFocus()
+                    }
                 }
             }
-
-
+            packingInfoList.clear()
+            packingInfoList = PackingQuery().getListPackingInfoByCaseNo(sCaseNo)
         }catch (e:Exception){
             e.printStackTrace()
         }
@@ -352,6 +399,29 @@ class CheckListCase : AppCompatActivity() {
         buttonYes.setOnClickListener {
             dialog.dismiss()
             asyncSave()
+        }
+        buttonNo.setOnClickListener {
+            dialog.dismiss()
+        }
+    }
+
+    private fun alertDialogNoSKBUpdate(){
+        val builder = AlertDialog.Builder(this)
+        val inflater = layoutInflater
+        val view = inflater.inflate(R.layout.alert_dialog   , null)
+        builder.setView(view)
+        val dialog = builder.create()
+        dialog.show()
+        dialog.setCancelable(false)
+        val buttonYes = view.findViewById<Button>(R.id.button_yes)
+        val buttonNo = view.findViewById<Button>(R.id.button_no)
+        val textView = view.findViewById<TextView>(R.id.txt_text)
+
+        textView.text = "ตต้องการแก้ไขข้อมูล?"
+
+        buttonYes.setOnClickListener {
+            dialog.dismiss()
+            asyncUpdateNoSKB()
         }
         buttonNo.setOnClickListener {
             dialog.dismiss()

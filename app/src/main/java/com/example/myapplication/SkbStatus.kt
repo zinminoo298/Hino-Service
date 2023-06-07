@@ -8,6 +8,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -27,6 +28,7 @@ class SkbStatus : AppCompatActivity() {
         lateinit var recyclerView: RecyclerView
         lateinit var viewAdapter: RecyclerView.Adapter<*>
         lateinit var viewManager: RecyclerView.LayoutManager
+        lateinit var cardView: CardView
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +37,7 @@ class SkbStatus : AppCompatActivity() {
         editTextSKB = findViewById(R.id.editText_skb)
         textViewOrderNo = findViewById(R.id.textview_orderNo)
         recyclerView = findViewById(R.id.recyclerview_skb_list)
+        cardView = findViewById(R.id.cardView_back)
         detailSkbList = ArrayList<GetDetailSKBModel>()
 
 
@@ -67,6 +70,11 @@ class SkbStatus : AppCompatActivity() {
             }
             false
         })
+
+        cardView.setOnClickListener {
+            finish()
+            super.onBackPressed()
+        }
     }
 
     private fun asyncSearchSKB(){

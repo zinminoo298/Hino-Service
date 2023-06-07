@@ -9,6 +9,7 @@ import android.os.Looper
 import android.view.KeyEvent
 import android.view.View
 import android.widget.*
+import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
 import com.example.myapplication.DataQuery.*
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +27,7 @@ class  ReceiveSKB : AppCompatActivity() {
         lateinit var textViewPartNo: TextView
         lateinit var textViewTotalReceive: TextView
         lateinit var buttonList: Button
+        lateinit var cardView: CardView
         var date = ""
         var currentDate = ""
         var orderNoList = ArrayList<String>()
@@ -42,6 +44,7 @@ class  ReceiveSKB : AppCompatActivity() {
         textViewPartNo = findViewById(R.id.textView_partNo)
         textViewTotalReceive = findViewById(R.id.textView_totalReceive)
         buttonList = findViewById(R.id.button_list)
+        cardView = findViewById(R.id.cardView_back)
 
         onLoad()
 
@@ -99,6 +102,11 @@ class  ReceiveSKB : AppCompatActivity() {
 
         textViewOrderDate.setOnClickListener {
             datePicker()
+        }
+
+        cardView.setOnClickListener {
+            finish()
+            super.onBackPressed()
         }
 
     }

@@ -443,4 +443,36 @@ class PackingQuery {
         }
         return result
     }
+
+    fun updatePackingInformationNoSKB(caseNo:String, orderNo:String, partNo:String, qty:Int, user:String) : Boolean{
+        val sql = "EXEC  spPDA_Packing_UpdatePackingInfoNoSKB '$caseNo','$orderNo','$partNo' ,'$qty','$user',''"
+        return try{
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            statement.executeQuery(sql)
+            statement.close()
+            Gvariable.conn!!.close()
+            true
+        }catch (e:Exception){
+            e.printStackTrace()
+            Gvariable.conn!!.close()
+            false
+        }
+    }
+
+    fun updateOrderProcessNoSKB(orderNo:String, partNo: String, qty:Int, user:String, caseNo: String) : Boolean {
+        val sql = "EXEC  spPDA_Packing_UpdateOrderProcessNoSKB '$orderNo','$partNo','$qty' ,'$user','$caseNo',''"
+        return try{
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            statement.executeQuery(sql)
+            statement.close()
+            Gvariable.conn!!.close()
+            true
+        }catch (e:Exception){
+            e.printStackTrace()
+            Gvariable.conn!!.close()
+            false
+        }
+    }
 }

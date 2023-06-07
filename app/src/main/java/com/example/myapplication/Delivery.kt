@@ -10,6 +10,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -32,6 +33,7 @@ class Delivery : AppCompatActivity() {
         lateinit var recyclerView: RecyclerView
         lateinit var viewAdapter: RecyclerView.Adapter<*>
         lateinit var viewManager: RecyclerView.LayoutManager
+        lateinit var cardView: CardView
         var roundList = ArrayList<String>()
         var date = ""
     }
@@ -46,6 +48,7 @@ class Delivery : AppCompatActivity() {
         buttonTransferCase = findViewById(R.id.button_transfer_case)
         buttonCloseCase = findViewById(R.id.button_close_case)
         recyclerView = findViewById(R.id.recyclerview_delivery_normal)
+        cardView = findViewById(R.id.cardView_back)
         orderDetailList = ArrayList<GetOrderDetailModel>()
 
         onLoad()
@@ -100,6 +103,11 @@ class Delivery : AppCompatActivity() {
 
         textViewDate.setOnClickListener {
             datePicker()
+        }
+
+        cardView.setOnClickListener {
+            finish()
+            super.onBackPressed()
         }
 
     }

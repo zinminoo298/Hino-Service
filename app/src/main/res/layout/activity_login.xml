@@ -128,7 +128,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
         android:gravity="center"
-        android:text="Last update: 14/02/2023"
+        android:text="Last update: 02/06/2023"
         android:textColor="#F08F5F"
         android:textSize="17sp"
         app:layout_constraintBottom_toBottomOf="parent"

@@ -55,42 +55,63 @@ class Packing : AppCompatActivity() {
 
         editTextKB.setOnKeyListener(View.OnKeyListener { _, _, event ->
             if (event.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
-                if (editTextKB.text.toString().isNotEmpty()) {
-                    PartNo = ""
-                    //check serial Barcode
-                    if (checkSerialBarcode()) {
-                        var barcodeType = textViewBarcodeType.text.toString()
-                        when(barcodeType){
-                            "2D" -> {
+                if(editTextQty.text.toString().isEmpty()) {
 
+                    if (caseNoList.isNotEmpty()) {
+                        if (editTextKB.text.toString().isNotEmpty()) {
+                            PartNo = ""
+                            //check serial Barcode
+                            if (checkSerialBarcode()) {
+                                var barcodeType = textViewBarcodeType.text.toString()
+                                when (barcodeType) {
+                                    "2D" -> {
+
+                                    }
+
+                                    "SKB" -> {
+
+                                    }
+
+                                    "PHT" -> {
+
+                                    }
+                                }
+                            } else {
+                                Gvariable().messageAlertDialog(
+                                    this,
+                                    "กรุณาแสกนเอกสาร Kanban",
+                                    layoutInflater
+                                )
+                                Gvariable().alarm(this)
+                                editTextKB.selectAll()
+                                editTextKB.requestFocus()
                             }
-
-                            "SKB" -> {
-
-                            }
-
-                            "PHT" -> {
-
-                            }
+                        } else {
+                            Gvariable().messageAlertDialog(
+                                this,
+                                "กรุณาแสกนเอกสาร Serial Kanban เท่านั้น",
+                                layoutInflater
+                            )
+                            Gvariable().alarm(this)
+                            editTextKB.requestFocus()
                         }
                     } else {
                         Gvariable().messageAlertDialog(
                             this,
-                            "กรุณาแสกนเอกสาร Kanban",
+                            "กรุณาเลือก CaseNo",
                             layoutInflater
                         )
                         Gvariable().alarm(this)
-                        editTextKB.selectAll()
-                        editTextKB.requestFocus()
                     }
-                } else {
+                }
+                else{
                     Gvariable().messageAlertDialog(
                         this,
-                        "กรุณาแสกนเอกสาร Serial Kanban เท่านั้น",
+                        "Error: Qty < 0!!",
                         layoutInflater
                     )
                     Gvariable().alarm(this)
-                    editTextKB.requestFocus()
+                    editTextQty.requestFocus()
                 }
             }
             false

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">Hino Service</string>
     <string name="login_toolbar">Hino Service</string>
     <string name="setting_toolbar">Setting</string>
     <string name="main_menu_toolbar">Service Menu</string>
