@@ -58,9 +58,9 @@ class OrderDetailQuery {
             val statement = Gvariable.conn!!.createStatement()
             result = statement.executeQuery(sql)
             mReturn = if(result.next()) {
-               result.getInt("OrderQty")
+                result.getInt("OrderQty")
             } else{
-               0
+                0
             }
             statement.close()
             Gvariable.conn!!.close()
@@ -210,5 +210,44 @@ class OrderDetailQuery {
             Gvariable.conn!!.close()
         }
         return orderList
+    }
+
+    fun getOrderDetailBySerial(station: String, serialNo: String) : String{
+        var orderDetail = ""
+        var result:ResultSet? = null
+        var sql = ""
+
+        when(station){
+            "RECEIVE" -> {
+                sql = "Select OrderDetailId,OrderNO,OrderDate From dbo.PDA_Order_ListData_RECEIVE('$serialNo') Order by OrderNo ASC"
+            }
+
+            "PACKING" -> {
+                sql = "Select OrderDetailId,OrderNO,OrderDate From dbo.PDA_Order_ListData_PACKING('$serialNo') Order by OrderNo ASC"
+            }
+
+            "DELIVERY" -> {
+                sql = "Select OrderDetailId,OrderNO,OrderDate From dbo.PDA_Order_ListData_DELIVERY('$serialNo') Order by OrderNo ASC"
+            }
+        }
+        try{
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            result = statement.executeQuery(sql)
+            orderDetail = if(result.next()){
+                if(result.getString("OrderDetailId") == null){
+                    ""
+                }else{
+                    result.getString("OrderDetailId") + "|" + result.getString("OrderNo") + "|" + result.getString("OrderDate")
+                }
+            } else{
+                ""
+            }
+        }catch (e:Exception){
+            e.printStackTrace()
+            Gvariable.conn!!.close()
+            orderDetail = ""
+        }
+        return orderDetail
     }
 }

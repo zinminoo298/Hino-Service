@@ -215,7 +215,7 @@ class OpenCasePacking : AppCompatActivity() {
     private fun asyncPacking(){
         val deferred = lifecycleScope.async(Dispatchers.IO) {
             Packing.date = GetTimeQuery().timeServer().split("|").toTypedArray()[1]
-            Packing().listOrderNo(Packing.date)
+            Packing().listOrderNo(Packing.date, "", "")
             Packing().listCaseNo()
             Packing.countCaseNo = PackingQuery().getCaseNoList(Gvariable.userName.toString())
         }

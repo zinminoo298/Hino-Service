@@ -444,6 +444,32 @@ class PackingQuery {
         return result
     }
 
+    fun checkPartAvailable(partNo: String, orderNo: String) : Boolean{
+        var resultSet: ResultSet? = null
+        var result = false
+        var sql = "Select OrderNo From OrderProcess " +
+                " Where Isnull(SerialNo,'') <> '' and Isnull(ReceiveQty,0) > Isnull(PackQTy,0) "
+        if(partNo != ""){
+            sql += " and SerialNO = '$partNo' "
+        }
+        if(orderNo != ""){
+            sql += " and OrderNo = '$orderNo' "
+        }
+        try{
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            resultSet = statement.executeQuery(sql)
+            result = resultSet.next()
+            statement.close()
+            Gvariable.conn!!.close()
+        }catch (e:Exception){
+            e.printStackTrace()
+            Gvariable.conn!!.close()
+            result  = false
+        }
+        return result
+    }
+
     fun updatePackingInformationNoSKB(caseNo:String, orderNo:String, partNo:String, qty:Int, user:String) : Boolean{
         val sql = "EXEC  spPDA_Packing_UpdatePackingInfoNoSKB '$caseNo','$orderNo','$partNo' ,'$qty','$user',''"
         return try{
