@@ -501,4 +501,75 @@ class PackingQuery {
             false
         }
     }
+
+    fun saveCaseNo(pId:String, caseNo:String, packQty:String, packBy:String) : Boolean{
+        val sql = "EXEC  spPDA_Packing_savePackingInfo '$pId','$caseNo','${Integer.parseInt(packQty)}' ,'$packBy',''"
+        return try{
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            statement.executeQuery(sql)
+            statement.close()
+            Gvariable.conn!!.close()
+            true
+        }catch (e:Exception){
+            e.printStackTrace()
+            Gvariable.conn!!.close()
+            false
+        }
+    }
+
+    fun getMaxYearByCaseNo(caseNo :String) : Int{
+        var resultSet: ResultSet? = null
+        var date = 0
+        var sql = "SELECT dbo.PDA_Packing_getMaxYearbyCaseNO ('$caseNo')  as CaseYear "
+        try{
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            resultSet = statement.executeQuery(sql)
+            date = if(resultSet.next()){
+                resultSet.getInt("CaseYear")
+            } else{
+                0
+            }
+            statement.close()
+            Gvariable.conn!!.close()
+        }catch (e:Exception){
+            e.printStackTrace()
+            Gvariable.conn!!.close()
+            date  = 0
+        }
+        return date
+    }
+
+    fun updateCaseStatus(caseNo:String, caseYear:Int, status:String){
+        var sql = "update [CaseNo] set " +
+                " Printed= '$status' " +
+                " where CaseNo= '$caseNo' and CaseYear= '$caseYear' "
+        try{
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            statement.executeUpdate(sql)
+            statement.close()
+            Gvariable.conn!!.close()
+        }catch (e:Exception){
+            e.printStackTrace()
+            Gvariable.conn!!.close()
+        }
+    }
+
+    fun updateCaseFlag(caseNo:String, user:String) : Boolean{
+        val sql = "EXEC  spPDA_Packing_UpdateFlagCaseNo '$caseNo', '$user','' "
+        return try{
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            statement.executeQuery(sql)
+            statement.close()
+            Gvariable.conn!!.close()
+            true
+        }catch (e:Exception){
+            e.printStackTrace()
+            Gvariable.conn!!.close()
+            false
+        }
+    }
 }

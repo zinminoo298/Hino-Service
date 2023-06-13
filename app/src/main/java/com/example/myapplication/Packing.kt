@@ -12,6 +12,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Spinner
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
 import com.example.myapplication.DataQuery.*
@@ -33,11 +34,15 @@ class Packing : AppCompatActivity() {
         lateinit var textViewPartNo: TextView
         lateinit var textViewBarcodeType: TextView
         lateinit var buttonSave: Button
+        lateinit var buttonSaveCase: Button
+        lateinit var buttonListCase: Button
+        lateinit var buttonListOrder: Button
         var countCaseNo = 0
         var date = ""
         var currentDate =""
         var PartNo = ""
         var OrderNo = ""
+        var fullOrder = ""
         var orderNoList = ArrayList<String>()
         var caseNoList = ArrayList<String>()
     }
@@ -54,13 +59,16 @@ class Packing : AppCompatActivity() {
         editTextCheckOrder = findViewById(R.id.editText_check_order)
         textViewDate = findViewById(R.id.textview_date)
         textViewPartNo = findViewById(R.id.textView_part_no)
+        textViewBarcodeType = findViewById(R.id.textview_barcode_type)
+        buttonSaveCase = findViewById(R.id.btn_save_case)
+        buttonSave = findViewById(R.id.btn_save)
+
 
         asyncOnLoad()
 
         editTextKB.setOnKeyListener(View.OnKeyListener { _, _, event ->
             if (event.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
                 if(editTextQty.text.toString().isEmpty()) {
-
                     if (caseNoList.isNotEmpty()) {
                         if (editTextKB.text.toString().isNotEmpty()) {
                             PartNo = ""
@@ -119,6 +127,7 @@ class Packing : AppCompatActivity() {
                             )
                             Gvariable().alarm(this)
                             editTextKB.requestFocus()
+                            editTextKB.nextFocusDownId = editTextKB.id
                         }
                     } else {
                         Gvariable().messageAlertDialog(
@@ -163,7 +172,7 @@ class Packing : AppCompatActivity() {
                                 //date time picker invisible
                                 //label4 invisible
                                 //buttonviewfullorder invisible
-                               asyncListOrderNo(partNo)
+                                asyncListOrderNo(partNo)
                             }
                             else{
                                 editTextCheckOrder.requestFocus()
@@ -175,7 +184,7 @@ class Packing : AppCompatActivity() {
                             editTextSticker.selectAll()
                         }
                     } else{
-                                                                                                                                            Gvariable().alarm(this)
+                        Gvariable().alarm(this)
                         Gvariable().messageAlertDialog(this, "Error: Qty <= 0", layoutInflater)
                         editTextQty.requestFocus()
                         editTextQty.selectAll()
@@ -230,6 +239,53 @@ class Packing : AppCompatActivity() {
             }
         }
 
+        editTextCheckOrder.setOnKeyListener(View.OnKeyListener {_,_,event ->
+            if (event.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
+                if(editTextSticker.text.toString().trim() != ""){
+                    if(editTextSticker.text.toString().substring(1,11) == (PartNo.substring(1,6)+ PartNo.substring(6,12))){
+                        val serialOrder = editTextCheckOrder.text.toString()
+                        if(serialOrder.length == 3){
+                            asyncCheckOrder()
+                        }else{
+                            Gvariable().alarm(this)
+                            Gvariable().messageAlertDialog(this, "กรณาใส่เลข 3 หลักบน Sticker", layoutInflater)
+                            editTextCheckOrder.selectAll()
+                            editTextCheckOrder.requestFocus()
+                        }
+                    }
+                    else{
+                        Gvariable().alarm(this)
+                        Gvariable().messageAlertDialog(this, "เอกสาร Sticker ไม่ตรงกับข้อมูล", layoutInflater)
+                        editTextSticker.selectAll()
+                        editTextSticker.requestFocus()
+                    }
+                }
+                else{
+                    Gvariable().alarm(this)
+                    Gvariable().messageAlertDialog(this, "กรุณา Scan Sticker", layoutInflater)
+                    editTextSticker.selectAll()
+                    editTextSticker.requestFocus()
+                }
+            }
+
+            false
+        })
+
+        buttonSaveCase.setOnClickListener {
+            val sCaseNo = spinnerCaseNo.selectedItem.toString()
+
+            if(sCaseNo.isNotEmpty()){
+                messageDialog(sCaseNo)
+            }else{
+                Gvariable().alarm(this)
+                Gvariable().messageAlertDialog(this, "กรุณาเลือก CaseNo", layoutInflater)
+            }
+        }
+
+        cardViewBack.setOnClickListener {
+            finish()
+            super.onBackPressed()
+        }
 
     }
 
@@ -310,6 +366,7 @@ class Packing : AppCompatActivity() {
                 //add hiddOrderNo to spinner orde
 
                 // txtfullorder.text = orderNo
+                fullOrder = orderNo
                 textViewPartNo.text = PartNo
 
 //                                            ViewFullOrder.txtCDate.Value = New Date(Mid(_date, 1, 4), Mid(_date, 5, 2), Mid(_date, 7, 2))
@@ -343,9 +400,10 @@ class Packing : AppCompatActivity() {
     private fun asyncOnLoad(){
         val deferred = lifecycleScope.async(Dispatchers.IO) {
             val getDate = GetTimeQuery().timeServer()
-            val date = getDate.split("|").toTypedArray()[0]
+            val calendarDate = getDate.split("|").toTypedArray()[0]
             val date1 = getDate.split("|").toTypedArray()[1]
-            currentDate = date
+            currentDate = calendarDate
+//            date = date1
             listOrderNo(date1,"","")
             listCaseNo()
 
@@ -365,12 +423,205 @@ class Packing : AppCompatActivity() {
                 }
             } else {
                 deferred.await()
+                textViewDate.text = currentDate
+                loadSpinnerCaseNo()
+                loadSpinnerOrderNo()
+
+            }
+        }
+    }
+
+    private fun asyncSaveCaseNo(sCaseNo: String){
+        var sFlag = false
+        val deferred = lifecycleScope.async(Dispatchers.IO) {
+            sFlag = PackingQuery().updateCaseFlag(sCaseNo, Gvariable.userName.toString())
+        }
+        lifecycleScope.launch(Dispatchers.Main) {
+            if (deferred.isActive) {
+                val progressDialogBuilder = Gvariable().createProgressDialog(this@Packing)
+                try {
+                    progressDialogBuilder.show()
+                    deferred.await()
+
+                } finally {
+                    progressDialogBuilder.cancel()
+                    if(sFlag){
+                        Gvariable().messageOkDialog(this@Packing, "บันทึก CaseNo เรียบร้อย", layoutInflater)
+                        orderNoList.clear()
+                        loadSpinnerOrderNo()
+                        editTextKB.setText("")
+                        editTextSticker.setText("")
+                    }
+                }
+            } else {
+                deferred.await()
+
+            }
+        }
+    }
+    private fun asyncCheckOrder(){
+        val deferred = lifecycleScope.async(Dispatchers.IO) {
+            checkOrder()
+        }
+        lifecycleScope.launch(Dispatchers.Main) {
+            if (deferred.isActive) {
+                val progressDialogBuilder = Gvariable().createProgressDialog(this@Packing)
+                try {
+                    progressDialogBuilder.show()
+                    deferred.await()
+
+                } finally {
+
+                    progressDialogBuilder.cancel()
+                }
+            } else {
+                deferred.await()
 
             }
         }
     }
 
     // TO DO SHOW COLOR
+
+    private fun checkOrder(){
+        val subStringFullOrder = fullOrder.substring(4,8)
+        val serialOrder = editTextCheckOrder.text.toString().trim()
+        var orderNo = ""
+        var orderQty = 0
+        var orderProcessQty = 0
+        var newQty = 0
+        var strTotal = ""
+        if(serialOrder == subStringFullOrder){
+            //Save
+            orderNo = fullOrder
+            var orderList = OrderProcessQuery().getOrder(PartNo, orderNo, date)
+            orderQty = OrderProcessQuery().getSumQtyByPid(orderList[0].pId!!, "ReceiveQty")
+            if(orderQty != 0){
+                try{
+                    orderProcessQty = OrderProcessQuery().getSumQtyByPid(orderList[0].pId!!, "PackQty")
+                }catch (e:Exception){
+                    orderProcessQty = 0
+                    e.printStackTrace()
+                }
+
+                newQty = orderProcessQty + Integer.parseInt(editTextQty.text.toString())
+
+                when {
+                    newQty < 0 -> {
+                        Gvariable().alarm(this)
+                        Gvariable().messageAlertDialog(this, "Error: Qty < 0", layoutInflater)
+                        Handler(Looper.getMainLooper()).post(){
+                            editTextQty.requestFocus()
+                            editTextQty.selectAll()
+                        }
+                    }
+                    newQty > orderQty -> {
+                        Gvariable().alarm(this)
+                        Gvariable().messageAlertDialog(this, "Error: Over Qty \n ($newQty / $orderQty", layoutInflater)
+                        Handler(Looper.getMainLooper()).post(){
+                            editTextQty.requestFocus()
+                            editTextQty.selectAll()
+                        }
+                    }
+                    else -> {
+                        var dCaseNo = spinnerCaseNo.selectedItem.toString().substring(1,5)
+                        var dOrderNo = spinnerOrderNo.selectedItem.toString().substring(1,5)
+                        if(dCaseNo == dOrderNo){
+                            if(orderList.isNotEmpty()){
+                                var chk = false
+                                var edpPart = false
+                                for (i in 0 until orderList.size){
+                                    edpPart = PackingQuery().isEDP(orderList[i].partNo!!)
+                                    if(chk){
+                                        break
+                                    }else{
+                                        when {
+                                            orderList[i].receiveDate.isNullOrEmpty() -> {
+                                                Gvariable().alarm(this)
+                                                Gvariable().messageAlertDialog(this, "Serial No. ยังไม่ผ่านการรับ Parts", layoutInflater)
+                                                Handler(Looper.getMainLooper()).post(){
+                                                    editTextKB.setText("")
+                                                    editTextSticker.setText("")
+                                                    editTextQty.setText("1")
+                                                    textViewPartNo.text = orderList[i].partNo
+                                                    editTextKB.requestFocus()
+                                                }
+                                                break
+                                            }
+                                            edpPart && orderList[i].edpQualityCheckDate.isNullOrEmpty() -> {
+                                                Gvariable().alarm(this)
+                                                Gvariable().messageAlertDialog(this, "ชิ้นงานยังไม่ผ่านการตรวจสอบ QC-EDP (No QC from EDP Process)", layoutInflater)
+                                                Handler(Looper.getMainLooper()).post(){
+                                                    editTextKB.selectAll()
+                                                    editTextKB.requestFocus()
+                                                }
+                                                break
+                                            }
+                                            else -> {
+                                                if(orderList[i].packingDate!!.isNullOrEmpty()){
+                                                    var sCaseNo = spinnerCaseNo.selectedItem.toString()
+                                                    var sSerialNo = editTextKB.text.toString()
+                                                    var flag = false
+                                                    flag = PackingQuery().saveCaseNo(orderList[i].pId!!, sCaseNo, editTextQty.text.toString(), Gvariable.userName.toString())
+                                                    if(flag){
+                                                        OrderProcessQuery().updateOrderProcessPacking(sCaseNo, orderList[i].pId!!, editTextQty.text.toString(), Gvariable.userName.toString())
+                                                        OrderProcessQuery().checkUpdateStatus(orderList[i].pId!!)
+                                                        chk = true
+                                                    }
+                                                }
+                                                strTotal = OrderProcessQuery().getSumQty(orderList[i].orderDetailId!!, "PackQty").toString()
+                                                Handler(Looper.getMainLooper()).post(){
+                                                    //lblW.Visible = False
+                                                    editTextKB.setText("")
+                                                    editTextSticker.setText("")
+                                                    editTextQty.setText("1")
+//                                    orderList.clear()
+//                                    loadSpinnerOrderNo()
+                                                    textViewPartNo.text = orderList[i].partNo
+                                                    textViewBarcodeType.text = ""
+                                                    editTextKB.selectAll()
+                                                    editTextKB.requestFocus()
+//                                                    btSave.Enabled = True
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }else{
+                                Gvariable().alarm(this)
+                                Gvariable().messageAlertDialog(this, "ไม่พบ Serial No. ใน Order", layoutInflater)
+                                Handler(Looper.getMainLooper()).post(){
+                                    editTextKB.selectAll()
+                                    editTextKB.requestFocus()
+                                }
+                            }
+                        }else{
+                            Gvariable().alarm(this)
+                            Gvariable().messageAlertDialog(this, "Error: CaseNo ไม่ตรงกับ Orderno", layoutInflater)
+                        }
+                    }
+                }
+
+            }
+            else{
+                Gvariable().alarm(this)
+                Gvariable().messageAlertDialog(this, "ไม่พบ Part ใน Order!", layoutInflater)
+                Handler(Looper.getMainLooper()).post(){
+                    editTextSticker.setText("")
+                    editTextKB.selectAll()
+                    editTextKB.requestFocus()
+                }
+            }
+        }
+        else{
+            Gvariable().alarm(this)
+            Gvariable().messageAlertDialog(this, "Sticker ไม่ตรงกับ Order", layoutInflater)
+            Handler(Looper.getMainLooper()).post(){
+                editTextCheckOrder.selectAll()
+                editTextCheckOrder.requestFocus()
+            }
+        }
+    }
 
     private fun buttonSave(){
         var sOrderNo = spinnerOrderNo.selectedItem.toString()
@@ -404,9 +655,62 @@ class Packing : AppCompatActivity() {
                             break
                         }
                         else{
-
+                            if(edpPart && orderList[i].edpQualityCheckDate.isNullOrEmpty()){
+                                Gvariable().alarm(this)
+                                Gvariable().messageAlertDialog(this, "ชิ้นงานยังไม่ผ่านการตรวจสอบ QC-EDP (No QC from EDP Process", layoutInflater)
+                                Handler(Looper.getMainLooper()).post(){
+                                    editTextKB.selectAll()
+                                    editTextKB.requestFocus()
+                                }
+                            }
+                            else{
+                                var sCaseNo = spinnerCaseNo.selectedItem.toString()
+                                var sCaseYear = PackingQuery().getMaxYearByCaseNo(sCaseNo)
+                                var serialNo = editTextKB.text.toString()
+                                var flag = false
+                                PackingQuery().updateCaseStatus(sCaseNo, sCaseYear, "O")
+                                if(textViewBarcodeType.text.toString() == "2D" || textViewBarcodeType.text.toString() == "PHT"){
+                                    flag = PackingQuery().saveCaseNo(orderList[i].pId!!, sCaseNo, editTextQty.text.toString(), Gvariable.userName.toString())
+                                    if(flag){
+                                        OrderProcessQuery().updateOrderProcessPacking(sCaseNo, orderList[i].pId!!, newQty.toString(), Gvariable.userName.toString())
+                                        chk = true
+                                    }
+                                }
+                                strTotal = OrderProcessQuery().getSumQty(orderList[i].orderDetailId!!, "PackQty").toString()
+                                Handler(Looper.getMainLooper()).post(){
+                                    //lblW.Visible = False
+                                    editTextKB.setText("")
+                                    editTextSticker.setText("")
+                                    editTextQty.setText("1")
+//                                    orderList.clear()
+//                                    loadSpinnerOrderNo()
+                                    textViewPartNo.text = orderList[i].partNo
+                                    textViewBarcodeType.text = ""
+                                    editTextKB.selectAll()
+                                    editTextKB.requestFocus()
+                                }
+                            }
                         }
                     }
+                    if(chk){
+                        //buttonSave is visible
+                    }else{
+                        Gvariable().alarm(this)
+                        Gvariable().messageAlertDialog(this, "แสกน Serial No. นี้เรียบร้อยแล้ว", layoutInflater)
+                        Handler(Looper.getMainLooper()).post(){
+                            //lblW.Visible = False
+                            editTextKB.setText("")
+                            editTextSticker.setText("")
+                            editTextQty.setText("1")
+                            orderNoList.clear()
+                            loadSpinnerOrderNo()
+                            textViewPartNo.text = orderList[0].partNo
+                            editTextKB.selectAll()
+                            editTextKB.requestFocus()
+                        }
+                    }
+                    //lbTotal.Text = Strtotal '& " / " & ds.Rows(0).Item("Qty")
+                    orderList.clear()
                 }
                 else{
                     Gvariable().alarm(this)
@@ -524,6 +828,31 @@ class Packing : AppCompatActivity() {
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerCaseNo.adapter = arrayAdapter
     }
+
+    private fun messageDialog(sCaseNo:String){
+        val builder = AlertDialog.Builder(this)
+        val inflater = layoutInflater
+        val view = inflater.inflate(R.layout.alert_dialog   , null)
+        builder.setView(view)
+        val dialog = builder.create()
+        dialog.show()
+        dialog.setCancelable(false)
+        val buttonYes = view.findViewById<Button>(R.id.button_yes)
+        val buttonNo = view.findViewById<Button>(R.id.button_no)
+        val textView = view.findViewById<TextView>(R.id.txt_text)
+
+        textView.text = "บันทึก CaseNo: \n $sCaseNo?"
+
+        buttonYes.setOnClickListener {
+            dialog.dismiss()
+            asyncSaveCaseNo(sCaseNo)
+        }
+        buttonNo.setOnClickListener {
+            dialog.dismiss()
+        }
+    }
+
+
 
 
 }

@@ -13,7 +13,7 @@
     <LinearLayout
         android:id="@+id/linearLayout1"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="35dp"
         android:layout_marginStart="15dp"
         android:layout_marginTop="65dp"
         android:layout_marginEnd="15dp"
@@ -53,7 +53,7 @@
     <LinearLayout
         android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="35dp"
         android:layout_marginStart="15dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="15dp"
@@ -88,7 +88,7 @@
     <LinearLayout
         android:id="@+id/linearLayout3"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="35dp"
         android:layout_marginStart="15dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="15dp"
@@ -123,7 +123,7 @@
     <LinearLayout
         android:id="@+id/linearLayout4"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="35dp"
         android:layout_marginStart="15dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="15dp"
@@ -171,7 +171,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="40dp"
+            android:layout_height="35dp"
             android:orientation="horizontal">
             <TextView
                 android:layout_width="0dp"
@@ -188,12 +188,28 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
-                android:layout_weight="0.65"
+                android:layout_weight="0.3"
                 android:inputType="number"
                 android:singleLine="true"
                 android:background="@android:drawable/editbox_background"
                 android:paddingStart="5dp"
                 android:paddingEnd="3dp" />
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.15"
+                android:layout_gravity="center"
+                android:backgroundTint="@color/blue"/>
+
+            <Button
+                android:id="@+id/btn_save"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.2"
+                android:layout_gravity="center"
+                android:background="@mipmap/arrow_down"/>
+
         </LinearLayout>
 
         <TextView
@@ -208,7 +224,7 @@
     <LinearLayout
         android:id="@+id/linearLayout6"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="35dp"
         android:layout_marginStart="15dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="15dp"
@@ -244,7 +260,7 @@
     <LinearLayout
         android:id="@+id/linearLayout7"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="35dp"
         android:layout_marginStart="15dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="15dp"
@@ -283,7 +299,7 @@
     <LinearLayout
         android:id="@+id/linearLayout8"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="35dp"
         android:layout_marginStart="15dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="15dp"
@@ -319,37 +335,78 @@
     <LinearLayout
         android:id="@+id/view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:layout_height="100dp"
+        android:orientation="vertical"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
         app:layout_constraintBottom_toBottomOf="@+id/include" >
 
-        <Button
-            android:id="@+id/button_delete"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.4"
-            android:text="Delete"
-            android:textSize="12sp"
-            android:backgroundTint="@color/red"/>
-        <View
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.2"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.5">
 
-        <Button
-            android:id="@+id/button_next"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.4"
-            android:backgroundTint="@color/green"
-            android:text="Next"
-            android:textSize="12sp" />
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.6"
+                android:textSize="18sp"
+                android:layout_margin="5dp"
+                android:gravity="start|center_vertical"
+                android:textColor="@color/black"/>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.01"/>
+            <Button
+                android:id="@+id/btn_save_case"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.29"
+                android:textSize="12sp"
+                android:text = "Save Case"
+                android:backgroundTint="@color/green" />
 
-        <View
-            android:layout_width="1dp"
-            android:layout_height="match_parent"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.5">
+            <TextView
+                android:id="@+id/textview_barcode_type"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.3"
+                android:textSize="34sp"
+                android:text="SKB"
+                android:gravity="center"
+                android:textColor="@color/blue_dark"/>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.01"/>
+            <Button
+                android:id="@+id/btn_list_order"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.29"
+                android:textSize="12sp"
+                android:text = "List Order"
+                android:backgroundTint="@color/blue" />
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.01"/>
+            <Button
+                android:id="@id/btn_list_order"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.29"
+                android:textSize="12sp"
+                android:text = "List Case"
+                android:backgroundTint="@color/blue" />
+        </LinearLayout>
 
     </LinearLayout>
 

@@ -31,7 +31,9 @@ class OrderProcessQuery {
                     result.getString("ReceiveDate"),
                     result.getString("PId"),
                     result.getString("PartNo"),
-                    result.getString("OrderDetailId")
+                    result.getString("OrderDetailId"),
+                    result.getString("EDPQualityCheckDate"),
+                    result.getString("PackingDate")
                 ))
             }
             statement.close()
@@ -161,5 +163,21 @@ class OrderProcessQuery {
         }
 
         return mReturn!!
+    }
+
+    fun updateOrderProcessPacking(caseNo: String, orderProcessId:String, qty:String, user:String){
+        var sql = "update [OrderProcess] set" +
+                " CaseNo = $caseNo, PackQty=${Integer.parseInt(qty)}, PackingDate =  getdate(), PackingBy = $user ,LastEditBy = $user, LastEditDate = getdate()" +
+                " Where PId = '$orderProcessId'"
+        try{
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            statement.executeUpdate(sql)
+            statement.close()
+            Gvariable.conn!!.close()
+        }catch (e:Exception){
+            e.printStackTrace()
+            Gvariable.conn!!.close()
+        }
     }
 }

@@ -61,8 +61,8 @@ class OpenCasePacking : AppCompatActivity() {
         }
 
         buttonNext.setOnClickListener {
-//            asyncNext()
-            Toast.makeText(this, "Packing function is under testing", Toast.LENGTH_SHORT).show()
+            asyncNext()
+//            Toast.makeText(this, "Packing function is under testing", Toast.LENGTH_SHORT).show()
         }
 
         editTextCaseNo.setOnKeyListener(View.OnKeyListener { _, _, event ->
