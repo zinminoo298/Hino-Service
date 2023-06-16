@@ -1,10 +1,13 @@
 package com.example.myapplication
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony.Mms.Part
+import android.text.InputFilter
+import android.text.Spanned
 import android.view.KeyEvent
 import android.view.View
 import android.widget.ArrayAdapter
@@ -14,6 +17,7 @@ import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.cardview.widget.CardView
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.example.myapplication.DataQuery.*
 import kotlinx.coroutines.Dispatchers
@@ -37,6 +41,8 @@ class Packing : AppCompatActivity() {
         lateinit var buttonSaveCase: Button
         lateinit var buttonListCase: Button
         lateinit var buttonListOrder: Button
+        lateinit var buttonUp: Button
+        lateinit var buttonDown: Button
         var countCaseNo = 0
         var date = ""
         var currentDate =""
@@ -61,10 +67,17 @@ class Packing : AppCompatActivity() {
         textViewPartNo = findViewById(R.id.textView_part_no)
         textViewBarcodeType = findViewById(R.id.textview_barcode_type)
         buttonSaveCase = findViewById(R.id.btn_save_case)
+        buttonListCase = findViewById(R.id.btn_list_case)
+        buttonListOrder = findViewById(R.id.btn_list_order)
         buttonSave = findViewById(R.id.btn_save)
+        buttonUp = findViewById(R.id.button_up)
+        buttonDown = findViewById(R.id.button_down)
 
 
         asyncOnLoad()
+
+        editTextQty.setText("1")
+        editTextQty.filters = arrayOf<InputFilter>(MinMaxFilter(1,10000))
 
         editTextKB.setOnKeyListener(View.OnKeyListener { _, _, event ->
             if (event.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
@@ -82,32 +95,27 @@ class Packing : AppCompatActivity() {
                                             editTextQty.setText(inputBarcode[13])
                                             val kb = editTextKB.text.toString().trim()
                                             PartNo = kb.substring(2,7)+"-"+kb.substring(7,12)
-                                            // button save visible
-                                            // edittextQty visible
-                                            //spinnerOrder not visible
+                                            buttonSave.isVisible = true
+                                            editTextQty.isEnabled = true
+                                            editTextCheckOrder.isEnabled = false
                                             // lblW not visible
                                         }
+                                        asyncCheckSKB()
                                     }
 
                                     "PHT" -> {
                                         val partNo = editTextKB.text.toString().trim().uppercase()
                                         PartNo = partNo.substring(0,10)
-                                        // button save visible
-                                        // edittextQty visible
-                                        //spinnerOrder not visible
+                                        buttonSave.isVisible = true
+                                        editTextQty.isEnabled = true
+                                        editTextCheckOrder.isEnabled = false
                                         // lblW not visible
+                                        asyncCheckSKB()
                                     }
 
                                     "SKB" -> {
                                         asyncSKB()
                                     }
-                                }
-
-                                checkSKB()
-                                Handler(Looper.getMainLooper()).post(){
-                                    editTextKB.setText(PartNo)
-                                    editTextSticker.selectAll()
-                                    editTextSticker.requestFocus()
                                 }
                             } else {
                                 Gvariable().messageAlertDialog(
@@ -118,6 +126,7 @@ class Packing : AppCompatActivity() {
                                 Gvariable().alarm(this)
                                 editTextKB.selectAll()
                                 editTextKB.requestFocus()
+                                editTextKB.nextFocusDownId = editTextKB.id
                             }
                         } else {
                             Gvariable().messageAlertDialog(
@@ -163,15 +172,14 @@ class Packing : AppCompatActivity() {
             if (event.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
                 if(editTextSticker.text.toString().isNotEmpty()){
                     if(Integer.parseInt(editTextQty.text.toString()) > 0){
-                        if(editTextSticker.text.toString().substring(0,9) == (PartNo.substring(0,4)+ PartNo.substring(6,11))){
-                            var barType = textViewBarcodeType.text.toString().trim()
-                            var partNo = editTextKB.text.toString().trim()
+                        if(editTextSticker.text.toString().substring(0,10) == (PartNo.substring(0,5)+ PartNo.substring(6,11))){
+                            val barType = textViewBarcodeType.text.toString().trim()
+                            val partNo = editTextKB.text.toString().trim()
                             textViewPartNo.text = partNo
                             if(barType == "2D" || barType == "PHT"){
-                                editTextCheckOrder.isEnabled = false
-                                //date time picker invisible
+//                                editTextCheckOrder.isEnabled = false
                                 //label4 invisible
-                                //buttonviewfullorder invisible
+                                //buttonviewfullorder disable
                                 asyncListOrderNo(partNo)
                             }
                             else{
@@ -182,17 +190,20 @@ class Packing : AppCompatActivity() {
                             Gvariable().messageAlertDialog(this, "เอกสาร Sticker ไม่ตรงกับ PartNo", layoutInflater)
                             editTextSticker.requestFocus()
                             editTextSticker.selectAll()
+                            editTextSticker.nextFocusDownId = editTextSticker.id
                         }
                     } else{
                         Gvariable().alarm(this)
                         Gvariable().messageAlertDialog(this, "Error: Qty <= 0", layoutInflater)
                         editTextQty.requestFocus()
                         editTextQty.selectAll()
+                        editTextSticker.nextFocusDownId = editTextQty.id
                     }
                 }else{
                     Gvariable().alarm(this)
                     Gvariable().messageAlertDialog(this, "กรุณา Scan Sticker", layoutInflater)
                     editTextSticker.requestFocus()
+                    editTextSticker.nextFocusDownId = editTextSticker.id
                 }
             }
             false
@@ -282,11 +293,96 @@ class Packing : AppCompatActivity() {
             }
         }
 
+        buttonUp.setOnClickListener {
+            if(editTextQty.text.toString().isEmpty()){
+                editTextQty.setText("1")
+            }
+            else{
+                val qty = Integer.parseInt(editTextQty.text.toString())
+                if(qty >= 10000){
+                    editTextQty.setText("10000")
+                }
+                else{
+                    editTextQty.setText("${ (Integer.parseInt(editTextQty.text.toString()) + 1) }")
+                }
+            }
+        }
+
+        buttonDown.setOnClickListener {
+            if(editTextQty.text.toString().isEmpty()){
+                editTextQty.setText("1")
+            }
+            else{
+                val qty = Integer.parseInt(editTextQty.text.toString())
+                if(qty <= 1){
+                    editTextQty.setText("1")
+                }
+                else{
+                    editTextQty.setText("${ (Integer.parseInt(editTextQty.text.toString()) - 1) }")
+                }
+            }
+        }
+
+        buttonListCase.setOnClickListener {
+            asyncListCase(spinnerCaseNo.selectedItem.toString())
+        }
+
+        buttonListOrder.setOnClickListener {
+            asyncListOrderNo(PartNo)
+        }
+
         cardViewBack.setOnClickListener {
             finish()
             super.onBackPressed()
         }
 
+    }
+
+    private fun asyncListCase(sCaseNo:String){
+        val deferred = lifecycleScope.async(Dispatchers.IO) {
+            ListCase.caseList.clear()
+            ListCase.caseList = PackingQuery().getListPackingInfoByCaseNo(sCaseNo)
+            ListCase.total = 0
+            ListCase.total = PackingQuery().getTotalPackQtyByCaseNo(sCaseNo)
+        }
+        lifecycleScope.launch(Dispatchers.Main) {
+            if (deferred.isActive) {
+                val progressDialogBuilder = Gvariable().createProgressDialog(this@Packing)
+                try {
+                    progressDialogBuilder.show()
+                    deferred.await()
+
+                } finally {
+                    val intent = Intent(this@Packing, ListCase::class.java)
+                    startActivity(intent)
+                    progressDialogBuilder.cancel()
+                }
+            } else {
+                deferred.await()
+
+            }
+        }
+    }
+
+    private fun asyncCheckSKB(){
+        val deferred = lifecycleScope.async(Dispatchers.IO) {
+            checkSKB()
+        }
+        lifecycleScope.launch(Dispatchers.Main) {
+            if (deferred.isActive) {
+                val progressDialogBuilder = Gvariable().createProgressDialog(this@Packing)
+                try {
+                    progressDialogBuilder.show()
+                    deferred.await()
+
+                } finally {
+                    progressDialogBuilder.cancel()
+                }
+            } else {
+                deferred.await()
+
+            }
+        }
     }
 
     private fun asyncButtonSave(){
@@ -332,6 +428,10 @@ class Packing : AppCompatActivity() {
                     progressDialogBuilder.cancel()
                 }
             } else {
+                loadSpinnerOrderNo()
+                spinnerOrderNo.requestFocus()
+                Gvariable().alarm(this@Packing)
+                Gvariable().messageAlertDialog(this@Packing, "กรุณาเลือก Order No.", layoutInflater)
                 deferred.await()
 
             }
@@ -378,6 +478,7 @@ class Packing : AppCompatActivity() {
                 OrderNo = orderNo
                 // show color part no
             }
+            checkSKB()
         }
         lifecycleScope.launch(Dispatchers.Main) {
             if (deferred.isActive) {
@@ -388,7 +489,6 @@ class Packing : AppCompatActivity() {
 
                 } finally {
                     progressDialogBuilder.cancel()
-
                 }
             } else {
                 deferred.await()
@@ -623,7 +723,7 @@ class Packing : AppCompatActivity() {
         }
     }
 
-    private fun buttonSave(){
+    private fun  buttonSave(){
         var sOrderNo = spinnerOrderNo.selectedItem.toString()
         var partNo = editTextKB.text.toString().trim().uppercase()
         if(PackingQuery().checkPartAvailable(partNo, sOrderNo)){
@@ -780,6 +880,12 @@ class Packing : AppCompatActivity() {
             if(editTextKB.text.toString().length == 15){
                 if(PackingQuery().checkPartAvailable(PartNo, "")){
                     //OK
+                    Handler(Looper.getMainLooper()).post(){
+                        editTextKB.setText(PartNo)
+                        editTextSticker.selectAll()
+                        editTextSticker.requestFocus()
+                        editTextKB.nextFocusDownId = editTextSticker.id
+                    }
                 }
                 else{
                     Gvariable().alarm(this)
@@ -789,7 +895,7 @@ class Packing : AppCompatActivity() {
                         editTextKB.requestFocus()
                         textViewPartNo.text = ""
                         editTextQty.isEnabled = true
-                        //btn save visible
+                        buttonSave.isVisible = false
                     }
                 }
             }
@@ -799,6 +905,7 @@ class Packing : AppCompatActivity() {
                 Handler(Looper.getMainLooper()).post(){
                     editTextKB.setText("")
                     editTextKB.requestFocus()
+                    editTextKB.nextFocusDownId = editTextKB.id
                 }
             }
         }
@@ -852,7 +959,34 @@ class Packing : AppCompatActivity() {
         }
     }
 
+    inner class MinMaxFilter() : InputFilter {
+        private var intMin: Int = 0
+        private var intMax: Int = 0
 
+        // Initialized
+        constructor(minValue: Int, maxValue: Int) : this() {
+            this.intMin = minValue
+            this.intMax = maxValue
+        }
+
+        override fun filter(source: CharSequence, start: Int, end: Int, dest: Spanned, dStart: Int, dEnd: Int): CharSequence? {
+            try {
+                val input = Integer.parseInt(dest.toString() + source.toString())
+                if (isInRange(intMin, intMax, input)) {
+                    return null
+                }
+            } catch (e: NumberFormatException) {
+                e.printStackTrace()
+            }
+            return ""
+        }
+
+        // Check if input c is in between min a and max b and
+        // returns corresponding boolean
+        private fun isInRange(a: Int, b: Int, c: Int): Boolean {
+            return if (b > a) c in a..b else c in b..a
+        }
+    }
 
 
 }

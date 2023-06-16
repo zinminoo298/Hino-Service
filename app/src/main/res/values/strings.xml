@@ -11,5 +11,6 @@
     <string name="transfer_case_toolbar">Transfer Case</string>
     <string name="packing_toolbar">Packing</string>
     <string name="open_case_packing_toolbar">OC Packing</string>
+    <string name="list_case_toolbar">List Case</string>
 
 </resources>

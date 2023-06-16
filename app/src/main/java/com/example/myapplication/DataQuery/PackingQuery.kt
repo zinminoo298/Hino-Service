@@ -62,6 +62,9 @@ class PackingQuery {
             if(resultSet.next()){
                 qty = resultSet.getInt("SumPackQty")
             }
+            else{
+                qty = 0
+            }
             statement.close()
             Gvariable.conn!!.close()
         }catch (e:Exception){

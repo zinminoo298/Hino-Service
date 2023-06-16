@@ -113,11 +113,23 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:layout_weight="0.65"
+            android:layout_weight="0.45"
             android:inputType="number"
             android:background="@android:drawable/editbox_background"
             android:paddingStart="5dp"
             android:paddingEnd="3dp" />
+        <Button
+            android:id="@+id/button_up"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.1"
+            android:background="@mipmap/arrow_up"/>
+        <Button
+            android:id="@+id/button_down"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.1"
+            android:background="@mipmap/arrow_down"/>
     </LinearLayout>
 
     <LinearLayout
@@ -399,7 +411,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="0.01"/>
             <Button
-                android:id="@id/btn_list_order"
+                android:id="@+id/btn_list_case"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="0.29"
