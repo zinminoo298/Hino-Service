@@ -197,7 +197,7 @@
     <LinearLayout
         android:id="@+id/view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:orientation="horizontal"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
@@ -206,9 +206,10 @@
         <TextView
             android:id="@+id/textview_total"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="0.46"
             android:text="Total : 0 K/B"
+            android:gravity="center_vertical"
             android:textSize="16sp"/>
         <View
             android:layout_width="1dp"
@@ -216,7 +217,7 @@
         <Button
             android:id="@+id/button_transfer_case"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="0.15"
             android:text="T"
             android:textSize="12sp"
@@ -227,7 +228,7 @@
         <Button
             android:id="@+id/button_close_case"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="0.37"
             android:text="Close case"
             android:textSize="12sp"

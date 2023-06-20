@@ -575,4 +575,60 @@ class PackingQuery {
             false
         }
     }
+
+    fun checkShowColor(partNo: String) : String{
+        var resultSet: ResultSet? = null
+        var result = ""
+        val sql = "Select WeekofMonth, DayOFWK From  V_PDA_WCOLOR Where SerialNo = '$partNo' "
+        try{
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            resultSet = statement.executeQuery(sql)
+            if(resultSet.next()){
+                val weekOfMonth = resultSet.getString("WeekofMonth")
+                val dayOfWeek = resultSet.getString("DayOFWK")
+                var color = ""
+                when (dayOfWeek){
+                    "1" -> {
+                        //red
+                        color = "#FF0000"
+                    }
+                    "2" -> {
+                        //yellow_green
+                        color = "#9ACD32"
+                    }
+                    "3" -> {
+                        //pink
+                        color = "#FFC0CB"
+                    }
+                    "4" -> {
+                        //green
+                        color = "#32CD32"
+                    }
+                    "5" -> {
+                        //orange
+                        color = "#FFA500"
+                    }
+                    "6" -> {
+                        //blue
+                        color = "#0000FF"
+                    }
+                    "7" -> {
+                        //purple_500
+                        color = "#FF6200EE"
+                    }
+                }
+                result = "$weekOfMonth|$color"
+            }else{
+                result = ""
+            }
+            statement.close()
+            Gvariable.conn!!.close()
+        }catch (e:Exception){
+            e.printStackTrace()
+            Gvariable.conn!!.close()
+            result = ""
+        }
+        return result
+    }
 }

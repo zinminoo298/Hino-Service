@@ -13,7 +13,7 @@
     <LinearLayout
         android:id="@+id/linearLayout1"
         android:layout_width="match_parent"
-        android:layout_height="35dp"
+        android:layout_height="30dp"
         android:layout_marginStart="15dp"
         android:layout_marginTop="65dp"
         android:layout_marginEnd="15dp"
@@ -53,9 +53,9 @@
     <LinearLayout
         android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
-        android:layout_height="35dp"
+        android:layout_height="30dp"
         android:layout_marginStart="15dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="5dp"
         android:layout_marginEnd="15dp"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
@@ -80,6 +80,7 @@
             android:layout_gravity="center"
             android:layout_weight="0.65"
             android:singleLine="true"
+            android:selectAllOnFocus="true"
             android:background="@android:drawable/editbox_background"
             android:paddingStart="5dp"
             android:paddingEnd="3dp" />
@@ -88,9 +89,9 @@
     <LinearLayout
         android:id="@+id/linearLayout3"
         android:layout_width="match_parent"
-        android:layout_height="35dp"
+        android:layout_height="30dp"
         android:layout_marginStart="15dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="5dp"
         android:layout_marginEnd="15dp"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
@@ -115,6 +116,7 @@
             android:layout_gravity="center"
             android:layout_weight="0.45"
             android:inputType="number"
+            android:selectAllOnFocus="true"
             android:background="@android:drawable/editbox_background"
             android:paddingStart="5dp"
             android:paddingEnd="3dp" />
@@ -135,9 +137,9 @@
     <LinearLayout
         android:id="@+id/linearLayout4"
         android:layout_width="match_parent"
-        android:layout_height="35dp"
+        android:layout_height="30dp"
         android:layout_marginStart="15dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="5dp"
         android:layout_marginEnd="15dp"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
@@ -161,8 +163,8 @@
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:layout_weight="0.65"
-            android:inputType="number"
             android:singleLine="true"
+            android:selectAllOnFocus="true"
             android:background="@android:drawable/editbox_background"
             android:paddingStart="5dp"
             android:paddingEnd="3dp" />
@@ -173,7 +175,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="15dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="5dp"
         android:layout_marginEnd="15dp"
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
@@ -183,7 +185,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="35dp"
+            android:layout_height="30dp"
             android:orientation="horizontal">
             <TextView
                 android:layout_width="0dp"
@@ -200,27 +202,56 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
-                android:layout_weight="0.3"
-                android:inputType="number"
+                android:gravity="left|center_vertical"
+                android:layout_weight="0.2"
                 android:singleLine="true"
                 android:background="@android:drawable/editbox_background"
                 android:paddingStart="5dp"
                 android:paddingEnd="3dp" />
 
-            <Button
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardview"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="25dp"
                 android:layout_weight="0.15"
+                android:layout_marginRight="2dp"
                 android:layout_gravity="center"
-                android:backgroundTint="@color/blue"/>
+                app:cardCornerRadius="3dp"
+                app:cardElevation="3dp">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/blue_50"/>
+
+                <RelativeLayout
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:foreground="@mipmap/left_arrow"
+                    android:layout_gravity="center"/>
+            </androidx.cardview.widget.CardView>
 
             <Button
+                android:visibility="invisible"
                 android:id="@+id/btn_save"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="0.2"
+                android:layout_height="38dp"
+                android:layout_weight="0.3"
                 android:layout_gravity="center"
-                android:background="@mipmap/arrow_down"/>
+                android:backgroundTint="@color/blue_dark"
+                android:text="Save"
+                android:textSize="10sp"/>
+
+            <TextView
+                android:visibility="gone"
+                android:id="@+id/textview_week"
+                android:layout_width="0dp"
+                android:layout_height="25dp"
+                android:layout_weight="0.3"
+                android:gravity="center"
+                android:textSize="20sp"
+                android:textColor="@color/black"
+                android:layout_gravity="center"/>
 
         </LinearLayout>
 
@@ -229,16 +260,16 @@
             android:layout_height="wrap_content"
             android:text="(Order 3 ตัวท้าย)"
             android:textColor="@color/red"
-            android:textSize="14sp"/>
+            android:textSize="12sp"/>
 
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/linearLayout6"
         android:layout_width="match_parent"
-        android:layout_height="35dp"
+        android:layout_height="30dp"
         android:layout_marginStart="15dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="5dp"
         android:layout_marginEnd="15dp"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
@@ -264,6 +295,7 @@
             android:layout_weight="0.65"
             android:inputType="number"
             android:singleLine="true"
+            android:textSize="16sp"
             android:background="@android:drawable/editbox_background"
             android:paddingStart="5dp"
             android:paddingEnd="3dp" />
@@ -272,9 +304,9 @@
     <LinearLayout
         android:id="@+id/linearLayout7"
         android:layout_width="match_parent"
-        android:layout_height="35dp"
+        android:layout_height="30dp"
         android:layout_marginStart="15dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="5dp"
         android:layout_marginEnd="15dp"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
@@ -311,9 +343,9 @@
     <LinearLayout
         android:id="@+id/linearLayout8"
         android:layout_width="match_parent"
-        android:layout_height="35dp"
+        android:layout_height="30dp"
         android:layout_marginStart="15dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="5dp"
         android:layout_marginEnd="15dp"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
@@ -391,7 +423,6 @@
                 android:layout_height="match_parent"
                 android:layout_weight="0.3"
                 android:textSize="34sp"
-                android:text="SKB"
                 android:gravity="center"
                 android:textColor="@color/blue_dark"/>
             <View

@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.content.Intent
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -10,6 +11,7 @@ import android.text.InputFilter
 import android.text.Spanned
 import android.view.KeyEvent
 import android.view.View
+import android.view.View.*
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
@@ -34,6 +36,7 @@ class Packing : AppCompatActivity() {
         lateinit var editTextSticker: EditText
         lateinit var editTextCheckOrder: EditText
         lateinit var textViewDate: TextView
+        lateinit var textViewWeek: TextView
         lateinit var spinnerOrderNo: Spinner
         lateinit var textViewPartNo: TextView
         lateinit var textViewBarcodeType: TextView
@@ -66,6 +69,7 @@ class Packing : AppCompatActivity() {
         textViewDate = findViewById(R.id.textview_date)
         textViewPartNo = findViewById(R.id.textView_part_no)
         textViewBarcodeType = findViewById(R.id.textview_barcode_type)
+        textViewWeek = findViewById(R.id.textview_week)
         buttonSaveCase = findViewById(R.id.btn_save_case)
         buttonListCase = findViewById(R.id.btn_list_case)
         buttonListOrder = findViewById(R.id.btn_list_order)
@@ -81,7 +85,7 @@ class Packing : AppCompatActivity() {
 
         editTextKB.setOnKeyListener(View.OnKeyListener { _, _, event ->
             if (event.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
-                if(editTextQty.text.toString().isEmpty()) {
+                if(editTextQty.text.toString().isNotEmpty()) {
                     if (caseNoList.isNotEmpty()) {
                         if (editTextKB.text.toString().isNotEmpty()) {
                             PartNo = ""
@@ -177,12 +181,14 @@ class Packing : AppCompatActivity() {
                             val partNo = editTextKB.text.toString().trim()
                             textViewPartNo.text = partNo
                             if(barType == "2D" || barType == "PHT"){
-//                                editTextCheckOrder.isEnabled = false
+                                editTextCheckOrder.isEnabled = false
                                 //label4 invisible
                                 //buttonviewfullorder disable
                                 asyncListOrderNo(partNo)
                             }
                             else{
+                                editTextCheckOrder.isEnabled = true
+                                editTextSticker.nextFocusDownId = editTextCheckOrder.id
                                 editTextCheckOrder.requestFocus()
                             }
                         }else{
@@ -253,7 +259,7 @@ class Packing : AppCompatActivity() {
         editTextCheckOrder.setOnKeyListener(View.OnKeyListener {_,_,event ->
             if (event.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
                 if(editTextSticker.text.toString().trim() != ""){
-                    if(editTextSticker.text.toString().substring(1,11) == (PartNo.substring(1,6)+ PartNo.substring(6,12))){
+                    if(editTextSticker.text.toString().substring(0,10) == (PartNo.substring(0,5)+ PartNo.substring(6,11))){
                         val serialOrder = editTextCheckOrder.text.toString()
                         if(serialOrder.length == 3){
                             asyncCheckOrder()
@@ -442,15 +448,15 @@ class Packing : AppCompatActivity() {
 
         val deferred = lifecycleScope.async(Dispatchers.IO) {
             val partNo = editTextKB.text.toString().trim().uppercase()
-            PartNo = partNo.substring(0,10)
+            PartNo = partNo.substring(0,11)
             editTextQty.isEnabled = false
-            //btn save not visible
+            buttonSave.visibility = INVISIBLE
             editTextQty.setText("1")
-            // txt corder is enabled
+            editTextCheckOrder.isEnabled = true
             //date time picker visible
             // label 4 visible
 
-            var orderDetail = OrderDetailQuery().getOrderDetailBySerial("PACKING", PartNo)
+            var orderDetail = OrderDetailQuery().getOrderDetailBySerial("PACKING", partNo)
             var orderDetailList = orderDetail.split("|").toTypedArray()
             var orderDetailId = ""
             var orderNo = ""
@@ -462,9 +468,8 @@ class Packing : AppCompatActivity() {
                 orderNo = orderDetailList[1].trim()
 
                 hiddOrderNo = orderNo.substring(0,5)+"XXX"
-                //clear spinner order
-                //add hiddOrderNo to spinner orde
-
+                orderNoList.clear()
+                orderNoList.add(hiddOrderNo)
                 // txtfullorder.text = orderNo
                 fullOrder = orderNo
                 textViewPartNo.text = PartNo
@@ -476,7 +481,16 @@ class Packing : AppCompatActivity() {
 //
 //                                            ViewFullOrder.txtpartno.Text = _PartNo
                 OrderNo = orderNo
-                // show color part no
+                val checkColor = PackingQuery().checkShowColor(partNo).split("|").toTypedArray()
+                val week = checkColor[0]
+                val backColor = checkColor[1]
+                Handler(Looper.getMainLooper()).post(){
+                    loadSpinnerOrderNo()
+                    buttonSave.visibility = GONE
+                    textViewWeek.visibility = VISIBLE
+                    textViewWeek.text = week
+                    textViewWeek.setBackgroundColor(Color.parseColor(backColor))
+                }
             }
             checkSKB()
         }
@@ -584,7 +598,7 @@ class Packing : AppCompatActivity() {
     // TO DO SHOW COLOR
 
     private fun checkOrder(){
-        val subStringFullOrder = fullOrder.substring(4,8)
+        val subStringFullOrder = fullOrder.substring(4,7)
         val serialOrder = editTextCheckOrder.text.toString().trim()
         var orderNo = ""
         var orderQty = 0
@@ -874,11 +888,10 @@ class Packing : AppCompatActivity() {
         return true
     }
 
-
     private fun checkSKB(){
         if(PackingQuery().isSKB(PartNo)){
             if(editTextKB.text.toString().length == 15){
-                if(PackingQuery().checkPartAvailable(PartNo, "")){
+                if(PackingQuery().checkPartAvailable(editTextKB.text.toString().trim().uppercase(), "")){
                     //OK
                     Handler(Looper.getMainLooper()).post(){
                         editTextKB.setText(PartNo)

@@ -14,4 +14,7 @@
     <color name="green">#32CD32</color>
     <color name = "tea">#F08F5F</color>
     <color name = "tea_50">#50F08F5F</color>
+    <color name="yellow_green">#9ACD32</color>
+    <color name="pink">#FFC0CB</color>
+    <color name="orange">#FFA500</color>
 </resources>
