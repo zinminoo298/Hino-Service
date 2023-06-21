@@ -17,7 +17,7 @@ class DeliveryQuery {
             sql = "Select OrderNo As F_Order_No, SKBStatus From V_PDA_SummaryRPD_by_Order" +
                     " Where OrderDate like '$orderDate%' Group by OrderNo, SKBStatus Order by OrderNo"
         }else{
-            sql = "Select OrderNo AS F_Order_No, SKBStatus From V_PDA_SummaryRPD_by_Order Where 1=1 And and PartNo = '$partNo' "
+            sql = "Select OrderNo AS F_Order_No, SKBStatus From V_PDA_SummaryRPD_by_Order Where 1=1 And PartNo = '$partNo' "
             if(orderDate != ""){
                 sql += " And OrderDate = '$orderDate'"
             }
