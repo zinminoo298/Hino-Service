@@ -63,6 +63,7 @@ class DeliveryQuery {
             Gvariable().startConn()
             val statement = Gvariable.conn!!.createStatement()
             resultSet = statement.executeQuery(sql)
+            showOrderByPdsList.add("Select")
             while (resultSet.next()){
                 var orderNo = if(resultSet.getString("F_Order_No") == null) "" else resultSet.getString("F_Order_No")
                 showOrderByPdsList.add(orderNo)
@@ -110,6 +111,7 @@ class DeliveryQuery {
                          Gvariable().startConn()
             val statement = Gvariable.conn!!.createStatement()
             resultSet = statement.executeQuery(sql)
+            showOrderByOrderList.add("Select")
             while (resultSet.next()){
                 var orderNo = if(resultSet.getString("F_Order_No") == null) "" else resultSet.getString("F_Order_No")
                 showOrderByOrderList.add(orderNo)

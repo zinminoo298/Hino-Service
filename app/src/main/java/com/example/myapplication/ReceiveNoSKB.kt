@@ -92,7 +92,13 @@ class ReceiveNoSKB : AppCompatActivity() {
         })
 
         buttonSave.setOnClickListener {
-            asyncSave()
+            if(spinnerOrderNo.selectedItem.toString() == "Select"){
+                Gvariable().alarm(this)
+                Gvariable().messageAlertDialog(this, "โปรดเลือก Order No.", layoutInflater)
+            }
+            else{
+                asyncSave()
+            }
         }
 
         buttonList.setOnClickListener {
@@ -150,7 +156,9 @@ class ReceiveNoSKB : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {
             }
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-               asyncSpinnerChange()
+                if(spinnerOrderNo.selectedItem.toString() != "Select"){
+                    asyncSpinnerChange()
+                }
             }
         }
     }
@@ -271,9 +279,9 @@ class ReceiveNoSKB : AppCompatActivity() {
                     progressDialogBuilder.cancel()
                     editTextScanKanban.selectAll()
                     editTextScanKanban.requestFocus()
-                    if(orderNoList.isNotEmpty()){
-                        asyncSpinnerChange()
-                    }
+//                    if(orderNoList.isNotEmpty()){
+//                        asyncSpinnerChange()
+//                    }
                 }
             } else {
                 deferred.await()
