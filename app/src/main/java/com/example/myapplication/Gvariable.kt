@@ -17,6 +17,7 @@ import java.util.*
 
 class Gvariable {
     companion object {
+        var menuList = ArrayList<String>()
         var databaseServer = ""
         var databaseName = ""
         var databaseUser = ""

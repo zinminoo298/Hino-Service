@@ -208,7 +208,7 @@ class Delivery : AppCompatActivity() {
         if(orderDetailList.isNotEmpty()){
             var totalQty = 0
             for(i in 0 until orderDetailList.size){
-                totalQty += orderDetailList[2].packQty!!
+                totalQty += orderDetailList[i].packQty!!
             }
             Handler(Looper.getMainLooper()).post {
                 textViewTotal.text  = " Total : $totalQty K/B"

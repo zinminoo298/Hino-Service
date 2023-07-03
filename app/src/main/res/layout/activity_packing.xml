@@ -296,6 +296,7 @@
             android:inputType="number"
             android:singleLine="true"
             android:textSize="16sp"
+            android:textColor="@color/black"
             android:background="@android:drawable/editbox_background"
             android:paddingStart="5dp"
             android:paddingEnd="3dp" />
@@ -373,6 +374,7 @@
             android:singleLine="true"
             android:background="@android:drawable/editbox_background"
             android:paddingStart="5dp"
+            android:textColor="@color/black"
             android:paddingEnd="3dp" />
     </LinearLayout>
 
@@ -391,6 +393,7 @@
             android:layout_weight="0.5">
 
             <TextView
+                android:id="@+id/textview_total"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="0.6"

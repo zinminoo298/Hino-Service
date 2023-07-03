@@ -145,6 +145,65 @@ class ReceiveNoSKB : AppCompatActivity() {
                 }
             }
         }
+
+        spinnerOrderNo.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+            }
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+               asyncSpinnerChange()
+            }
+        }
+    }
+
+    private fun asyncSpinnerChange(){
+        var recQty = 0
+        val deferred = lifecycleScope.async(Dispatchers.IO) {
+            var orderNo = ""
+            if(orderNoList.isNotEmpty()){
+                orderNo = spinnerOrderNo.selectedItem.toString()
+            }
+            val inputBarcode = editTextScanKanban.text.toString().split("|").toTypedArray()
+            var partNo = ""
+            partNo = if(inputBarcode.isNotEmpty()){
+                inputBarcode[0].substring(2, 7) +"-"+ inputBarcode[0].substring(7, 12)
+            } else{
+                editTextScanKanban.text.toString()
+            }
+            recQty = OrderProcessQuery().getQtyOrder(orderNo, partNo)
+            if(recQty != 0){
+                Handler(Looper.getMainLooper()).post(){
+                    editTextReceiveQty.setText(recQty.toString())
+                    editTextReceiveQty.requestFocus()
+                }
+            }
+            else{
+                Gvariable().alarm(this@ReceiveNoSKB)
+                Gvariable().messageAlertDialog(this@ReceiveNoSKB,"ไม่พบ Part No. ใน Order นี้", layoutInflater)
+            }
+        }
+        lifecycleScope.launch(Dispatchers.Main) {
+            if (deferred.isActive) {
+                val progressDialogBuilder = Gvariable().createProgressDialog(this@ReceiveNoSKB)
+                try {
+                    progressDialogBuilder.show()
+                    deferred.await()
+
+                } finally {
+//                    if(recQty != 0){
+//                        editTextReceiveQty.setText(recQty)
+//                        editTextReceiveQty.requestFocus()
+//                    }
+//                    else{
+//                        Gvariable().alarm(this@ReceiveNoSKB)
+//                        Gvariable().messageAlertDialog(this@ReceiveNoSKB,"ไม่พบ Part No. ใน Order นี้", layoutInflater)
+//                    }
+                    progressDialogBuilder.cancel()
+
+                }
+            } else {
+                deferred.await()
+            }
+        }
     }
 
     private fun asyncOrderList(){
@@ -212,6 +271,9 @@ class ReceiveNoSKB : AppCompatActivity() {
                     progressDialogBuilder.cancel()
                     editTextScanKanban.selectAll()
                     editTextScanKanban.requestFocus()
+                    if(orderNoList.isNotEmpty()){
+                        asyncSpinnerChange()
+                    }
                 }
             } else {
                 deferred.await()
@@ -275,6 +337,9 @@ class ReceiveNoSKB : AppCompatActivity() {
             Gvariable().alarm(this)
             Gvariable().messageAlertDialog(this, "กรุณาเลือก Order", layoutInflater)
             //order spinner req focus
+        }
+        Handler(Looper.getMainLooper()).post(){
+            setSpinnerOrderNo()
         }
     }
 

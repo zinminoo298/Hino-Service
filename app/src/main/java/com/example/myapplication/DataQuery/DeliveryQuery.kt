@@ -57,7 +57,7 @@ class DeliveryQuery {
         var showOrderByPdsList = ArrayList<String>()
         var resultSet: ResultSet? = null
         var sql = "SELECT F_PDS_No, F_Order_No" +
-                " FROM PDA_Receive_RemainOrderNo ('$pds','$partNo') \"" +
+                " FROM PDA_Receive_RemainOrderNo ('$pds','$partNo') " +
                 " Order by F_Order_No "
         try{
             Gvariable().startConn()

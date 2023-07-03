@@ -37,6 +37,7 @@
             android:layout_height="40dp"
             android:textSize="18sp"
             android:gravity="center_vertical"
+            android:selectAllOnFocus="true"
             android:paddingLeft="5dp"
             android:singleLine="true"
             android:background="@android:drawable/editbox_background"/>

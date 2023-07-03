@@ -26,14 +26,50 @@ class OrderProcessQuery {
             val statement = Gvariable.conn!!.createStatement()
             result = statement.executeQuery(sql)
             while (result.next()) {
-                getOrderList.add(GetOrderModel(
-                    result.getInt("ReceiveQty"),
-                    result.getString("ReceiveDate"),
-                    result.getString("PId"),
-                    result.getString("PartNo"),
-                    result.getString("OrderDetailId"),
-                    result.getString("EDPQualityCheckDate"),
+                val qty = if(result.getInt("ReceiveQty") != null){
+                    result.getInt("ReceiveQty")
+                }else{
+                    0
+                }
+
+                val receiveDate = if(result.getString("ReceiveDate") != null){
+                    result.getString("ReceiveDate")
+                }else{
+                    ""
+                }
+
+                val pId = if(result.getString("PId") != null){
+                    result.getString("PId")
+                }else{
+                    ""
+                }
+
+                val partNo = if(result.getString("PartNo") != null){
+                    result.getString("PartNo")
+                }else{
+                    ""
+                }
+
+                val orderDetailId = if(result.getString("OrderDetailId") != null){
+                    result.getString("OrderDetailId")
+                }else{
+                    ""
+                }
+
+                val edpQualityCheckDate = if(result.getString("EDPQualityCheckDate") != null){
+                    result.getString("EDPQualityCheckDate")
+                }else{
+                    ""
+                }
+
+                val packingDate = if(result.getString("PackingDate") != null){
                     result.getString("PackingDate")
+                }else{
+                    ""
+                }
+
+                getOrderList.add(GetOrderModel(
+                    qty, receiveDate, pId, partNo, orderDetailId, edpQualityCheckDate, packingDate
                 ))
             }
             statement.close()
@@ -140,19 +176,19 @@ class OrderProcessQuery {
         var sql = ""
         var result: ResultSet? = null
 
-        sql = "select PId from OrderProcess where PId = @PId " +
+        sql = "select PId from OrderProcess where PId = '$id' " +
                 " if @@Rowcount = 0  " +
                 " INSERT INTO OrderProcess(PId, OrderDetailId, OrderNo, SerialNo) " +
-                " VALUES ($id, $orderDetailId, $orderNo, $serialNo) " +
+                " VALUES ('$id', '$orderDetailId', '$orderNo', '$serialNo') " +
                 " else " +
                 " update OrderProcess set " +
-                " PId=$id, OrderDetailId=$orderDetailId, OrderNo=$orderNo, SerialNo=$serialNo " +
-                " where PId = $id "
+                " PId='$id', OrderDetailId='$orderDetailId', OrderNo='$orderNo', SerialNo='$serialNo' " +
+                " where PId = '$id' "
 
         mReturn = try{
             Gvariable().startConn()
             val statement = Gvariable.conn!!.createStatement()
-            statement.executeUpdate(sql)
+            statement.executeQuery(sql)
             statement.close()
             Gvariable.conn!!.close()
             true
@@ -167,7 +203,7 @@ class OrderProcessQuery {
 
     fun updateOrderProcessPacking(caseNo: String, orderProcessId:String, qty:String, user:String){
         var sql = "update [OrderProcess] set" +
-                " CaseNo = $caseNo, PackQty=${Integer.parseInt(qty)}, PackingDate =  getdate(), PackingBy = $user ,LastEditBy = $user, LastEditDate = getdate()" +
+                " CaseNo = '$caseNo', PackQty='${Integer.parseInt(qty)}', PackingDate =  getdate(), PackingBy = '$user' ,LastEditBy = '$user', LastEditDate = getdate()" +
                 " Where PId = '$orderProcessId'"
         try{
             Gvariable().startConn()
@@ -179,5 +215,29 @@ class OrderProcessQuery {
             e.printStackTrace()
             Gvariable.conn!!.close()
         }
+    }
+
+    fun getQtyOrder(orderNo:String, partNo:String) : Int {
+        var qty = 0
+        var sql = "SELECT CAST(OrderQty AS INTEGER) AS F_Qty" +
+                " FROM V_PDA_SummaryRPD_by_Order" +
+                " WHERE OrderNo = '$orderNo'" +
+                " AND PartNO = '$partNo'"
+        var result: ResultSet? = null
+        try{
+            Gvariable().startConn()
+            val statement = Gvariable.conn!!.createStatement()
+            result = statement.executeQuery(sql)
+            if(result.next()){
+                qty = result.getInt("F_Qty")
+            }
+            statement.close()
+            Gvariable.conn!!.close()
+        }catch (e:Exception){
+            qty = 0
+            e.printStackTrace()
+            Gvariable.conn!!.close()
+        }
+        return qty
     }
 }

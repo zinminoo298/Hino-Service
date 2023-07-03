@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.Adapter.PackingListAdapter
 import com.example.myapplication.DataModel.GetPackingListModel
+import com.example.myapplication.DataQuery.DeliveryQuery
 import com.example.myapplication.DataQuery.GetTimeQuery
 import com.example.myapplication.DataQuery.PackingQuery
 import kotlinx.coroutines.Dispatchers
@@ -62,7 +63,6 @@ class OpenCasePacking : AppCompatActivity() {
 
         buttonNext.setOnClickListener {
             asyncNext()
-//            Toast.makeText(this, "Packing function is under testing", Toast.LENGTH_SHORT).show()
         }
 
         editTextCaseNo.setOnKeyListener(View.OnKeyListener { _, _, event ->
@@ -98,6 +98,23 @@ class OpenCasePacking : AppCompatActivity() {
         var cntCaseNo = 0
         val deferred = lifecycleScope.async(Dispatchers.IO) {
             cntCaseNo = PackingQuery().getCountCaseByUser(Gvariable.userName.toString())
+            if(cntCaseNo > 0){
+                val getDate = GetTimeQuery().timeServer()
+                val calendarDate = getDate.split("|").toTypedArray()[0]
+                val date1 = getDate.split("|").toTypedArray()[1]
+                Packing.currentDate = calendarDate
+
+                //Packing List Order No
+                Packing.orderNoList.clear()
+                val showOrderList = DeliveryQuery().showOrder( date1, "", "")
+                for(i in 0 until showOrderList.size){
+                    Packing.orderNoList.add(showOrderList[i].substringBefore("|"))
+                }
+
+                //Packing List Case No
+                Packing.caseNoList.clear()
+                Packing.caseNoList = PackingQuery().getListCaseNoByUser(Gvariable.userName.toString())
+            }
         }
         lifecycleScope.launch(Dispatchers.Main) {
             if (deferred.isActive) {
@@ -116,11 +133,17 @@ class OpenCasePacking : AppCompatActivity() {
                         Gvariable().alarm(this@OpenCasePacking)
                         Gvariable().messageAlertDialog(this@OpenCasePacking, "กรุณาระบุ CaseNo", layoutInflater)
                     }
-
                 }
             } else {
                 deferred.await()
-
+                if(cntCaseNo > 0){
+                    val intent = Intent(this@OpenCasePacking, Packing::class.java)
+                    startActivity(intent)
+                }
+                else{
+                    Gvariable().alarm(this@OpenCasePacking)
+                    Gvariable().messageAlertDialog(this@OpenCasePacking, "กรุณาระบุ CaseNo", layoutInflater)
+                }
             }
         }
     }
@@ -209,32 +232,6 @@ class OpenCasePacking : AppCompatActivity() {
         }else{
             Gvariable().alarm(this)
             Gvariable().messageAlertDialog(this, "ไม่พบ CaseNo นี้ในระบบ", layoutInflater)
-        }
-    }
-
-    private fun asyncPacking(){
-        val deferred = lifecycleScope.async(Dispatchers.IO) {
-            Packing.date = GetTimeQuery().timeServer().split("|").toTypedArray()[1]
-            Packing().listOrderNo(Packing.date, "", "")
-            Packing().listCaseNo()
-            Packing.countCaseNo = PackingQuery().getCaseNoList(Gvariable.userName.toString())
-        }
-
-        lifecycleScope.launch(Dispatchers.Main) {
-            if (deferred.isActive) {
-                val progressDialogBuilder = Gvariable().createProgressDialog(this@OpenCasePacking)
-
-                try {
-                    progressDialogBuilder.show()
-                    deferred.await()
-                } finally {
-                    progressDialogBuilder.cancel()
-                    val intent = Intent(this@OpenCasePacking, Packing::class.java)
-                    startActivity(intent)
-                }
-            } else {
-                deferred.await()
-            }
         }
     }
 

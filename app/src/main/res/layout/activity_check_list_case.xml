@@ -39,6 +39,7 @@
             android:layout_height="40dp"
             android:layout_weight="0.7"
             android:textSize="18sp"
+            android:selectAllOnFocus="true"
             android:gravity="center_vertical"
             android:paddingLeft="5dp"
             android:singleLine="true"

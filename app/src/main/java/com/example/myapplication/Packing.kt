@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import android.app.DatePickerDialog
 import android.content.Intent
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
@@ -30,6 +31,7 @@ import org.w3c.dom.Text
 class Packing : AppCompatActivity() {
     companion object{
         lateinit var cardViewBack: CardView
+        lateinit var cardView: CardView
         lateinit var spinnerCaseNo: Spinner
         lateinit var editTextKB: EditText
         lateinit var editTextQty: EditText
@@ -46,6 +48,8 @@ class Packing : AppCompatActivity() {
         lateinit var buttonListOrder: Button
         lateinit var buttonUp: Button
         lateinit var buttonDown: Button
+        lateinit var textViewTotal: TextView
+        var uOrderNo = ""
         var countCaseNo = 0
         var date = ""
         var currentDate =""
@@ -60,6 +64,7 @@ class Packing : AppCompatActivity() {
         setContentView(R.layout.activity_packing)
 
         cardViewBack = findViewById(R.id.cardView_back)
+        cardView = findViewById(R.id.cardview)
         spinnerCaseNo = findViewById(R.id.spinner_case_no)
         spinnerOrderNo = findViewById(R.id.spinner_order_no)
         editTextKB = findViewById(R.id.editText_kb)
@@ -70,6 +75,7 @@ class Packing : AppCompatActivity() {
         textViewPartNo = findViewById(R.id.textView_part_no)
         textViewBarcodeType = findViewById(R.id.textview_barcode_type)
         textViewWeek = findViewById(R.id.textview_week)
+        textViewTotal = findViewById(R.id.textview_total)
         buttonSaveCase = findViewById(R.id.btn_save_case)
         buttonListCase = findViewById(R.id.btn_list_case)
         buttonListOrder = findViewById(R.id.btn_list_order)
@@ -78,16 +84,35 @@ class Packing : AppCompatActivity() {
         buttonDown = findViewById(R.id.button_down)
 
 
-        asyncOnLoad()
+        initiateActivity()
 
         editTextQty.setText("1")
         editTextQty.filters = arrayOf<InputFilter>(MinMaxFilter(1,10000))
+
+        textViewDate.setOnClickListener {
+            datePicker()
+        }
+
+        cardView.setOnClickListener {
+            if(fullOrder != ""){
+                ViewFullOrder.date = textViewDate.text.toString()
+                ViewFullOrder.partNo = PartNo
+                ViewFullOrder.orderList.clear()
+                ViewFullOrder.orderList.add(fullOrder)
+                val intent = Intent(this, ViewFullOrder::class.java)
+                startActivity(intent)
+            }else{
+                Gvariable().alarm(this)
+                Gvariable().messageAlertDialog(this, "โปรดเลือก Order No.", layoutInflater)
+            }
+        }
 
         editTextKB.setOnKeyListener(View.OnKeyListener { _, _, event ->
             if (event.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
                 if(editTextQty.text.toString().isNotEmpty()) {
                     if (caseNoList.isNotEmpty()) {
                         if (editTextKB.text.toString().isNotEmpty()) {
+                            fullOrder = ""
                             PartNo = ""
                             //check serial Barcode
                             if (checkSerialBarcode()) {
@@ -100,24 +125,28 @@ class Packing : AppCompatActivity() {
                                             val kb = editTextKB.text.toString().trim()
                                             PartNo = kb.substring(2,7)+"-"+kb.substring(7,12)
                                             buttonSave.isVisible = true
+                                            textViewWeek.visibility = GONE
                                             editTextQty.isEnabled = true
                                             editTextCheckOrder.isEnabled = false
-                                            // lblW not visible
                                         }
                                         asyncCheckSKB()
                                     }
 
                                     "PHT" -> {
                                         val partNo = editTextKB.text.toString().trim().uppercase()
-                                        PartNo = partNo.substring(0,10)
+                                        PartNo = partNo.substring(0,11)
                                         buttonSave.isVisible = true
                                         editTextQty.isEnabled = true
+                                        textViewWeek.visibility = GONE
                                         editTextCheckOrder.isEnabled = false
-                                        // lblW not visible
                                         asyncCheckSKB()
                                     }
 
                                     "SKB" -> {
+                                        editTextQty.isEnabled = false
+                                        buttonSave.visibility = INVISIBLE
+                                        editTextQty.setText("1")
+                                        editTextCheckOrder.isEnabled = true
                                         asyncSKB()
                                     }
                                 }
@@ -179,14 +208,16 @@ class Packing : AppCompatActivity() {
                         if(editTextSticker.text.toString().substring(0,10) == (PartNo.substring(0,5)+ PartNo.substring(6,11))){
                             val barType = textViewBarcodeType.text.toString().trim()
                             val partNo = editTextKB.text.toString().trim()
+                            PartNo = partNo
                             textViewPartNo.text = partNo
                             if(barType == "2D" || barType == "PHT"){
                                 editTextCheckOrder.isEnabled = false
-                                //label4 invisible
-                                //buttonviewfullorder disable
+                                cardView.isEnabled = false
+                                editTextSticker.nextFocusDownId =  spinnerOrderNo.id
                                 asyncListOrderNo(partNo)
                             }
                             else{
+                                cardView.isEnabled = true
                                 editTextCheckOrder.isEnabled = true
                                 editTextSticker.nextFocusDownId = editTextCheckOrder.id
                                 editTextCheckOrder.requestFocus()
@@ -334,7 +365,7 @@ class Packing : AppCompatActivity() {
         }
 
         buttonListOrder.setOnClickListener {
-            asyncListOrderNo(PartNo)
+            asyncOrderList()
         }
 
         cardViewBack.setOnClickListener {
@@ -428,14 +459,12 @@ class Packing : AppCompatActivity() {
 
                 } finally {
                     loadSpinnerOrderNo()
-                    spinnerOrderNo.requestFocus()
                     Gvariable().alarm(this@Packing)
                     Gvariable().messageAlertDialog(this@Packing, "กรุณาเลือก Order No.", layoutInflater)
                     progressDialogBuilder.cancel()
                 }
             } else {
                 loadSpinnerOrderNo()
-                spinnerOrderNo.requestFocus()
                 Gvariable().alarm(this@Packing)
                 Gvariable().messageAlertDialog(this@Packing, "กรุณาเลือก Order No.", layoutInflater)
                 deferred.await()
@@ -449,10 +478,6 @@ class Packing : AppCompatActivity() {
         val deferred = lifecycleScope.async(Dispatchers.IO) {
             val partNo = editTextKB.text.toString().trim().uppercase()
             PartNo = partNo.substring(0,11)
-            editTextQty.isEnabled = false
-            buttonSave.visibility = INVISIBLE
-            editTextQty.setText("1")
-            editTextCheckOrder.isEnabled = true
             //date time picker visible
             // label 4 visible
 
@@ -462,17 +487,15 @@ class Packing : AppCompatActivity() {
             var orderNo = ""
             var hiddOrderNo = ""
             if(orderDetailList.size == 3){
-                //date = orderDetail[2].trim()
-                //set date to datepicker
+                date = orderDetailList[2]
                 orderDetailId = orderDetailList[0].trim()
                 orderNo = orderDetailList[1].trim()
+                uOrderNo = orderNo
 
                 hiddOrderNo = orderNo.substring(0,5)+"XXX"
                 orderNoList.clear()
                 orderNoList.add(hiddOrderNo)
-                // txtfullorder.text = orderNo
                 fullOrder = orderNo
-                textViewPartNo.text = PartNo
 
 //                                            ViewFullOrder.txtCDate.Value = New Date(Mid(_date, 1, 4), Mid(_date, 5, 2), Mid(_date, 7, 2))
 //                                            ViewFullOrder.CboOrder.Items.Clear()
@@ -484,12 +507,22 @@ class Packing : AppCompatActivity() {
                 val checkColor = PackingQuery().checkShowColor(partNo).split("|").toTypedArray()
                 val week = checkColor[0]
                 val backColor = checkColor[1]
+                if(week == ""){
+                    Handler(Looper.getMainLooper()).post(){
+                        textViewWeek.visibility = INVISIBLE
+                    }
+                }else{
+                    Handler(Looper.getMainLooper()).post(){
+                        textViewWeek.text = week
+                        textViewWeek.setBackgroundColor(Color.parseColor(backColor))
+                    }
+                }
                 Handler(Looper.getMainLooper()).post(){
                     loadSpinnerOrderNo()
+                    textViewPartNo.text = PartNo
                     buttonSave.visibility = GONE
                     textViewWeek.visibility = VISIBLE
-                    textViewWeek.text = week
-                    textViewWeek.setBackgroundColor(Color.parseColor(backColor))
+                    textViewDate.text = "${date.substring(6,8)}-${date.substring(4,6)}-${date.substring(0,4)}"
                 }
             }
             checkSKB()
@@ -511,38 +544,43 @@ class Packing : AppCompatActivity() {
         }
     }
 
-    private fun asyncOnLoad(){
-        val deferred = lifecycleScope.async(Dispatchers.IO) {
-            val getDate = GetTimeQuery().timeServer()
-            val calendarDate = getDate.split("|").toTypedArray()[0]
-            val date1 = getDate.split("|").toTypedArray()[1]
-            currentDate = calendarDate
-//            date = date1
-            listOrderNo(date1,"","")
-            listCaseNo()
+//    private fun asyncOnLoad(){
+//        val deferred = lifecycleScope.async(Dispatchers.IO) {
+//            val getDate = GetTimeQuery().timeServer()
+//            val calendarDate = getDate.split("|").toTypedArray()[0]
+//            val date1 = getDate.split("|").toTypedArray()[1]
+//            currentDate = calendarDate
+//            listOrderNo(date1,"","")
+//            listCaseNo()
+//
+//        }
+//        lifecycleScope.launch(Dispatchers.Main) {
+//            if (deferred.isActive) {
+//                val progressDialogBuilder = Gvariable().createProgressDialog(this@Packing)
+//                try {
+//                    progressDialogBuilder.show()
+//                    deferred.await()
+//
+//                } finally {
+//                    textViewDate.text = currentDate
+//                    loadSpinnerCaseNo()
+//                    loadSpinnerOrderNo()
+//                    progressDialogBuilder.cancel()
+//                }
+//            } else {
+//                deferred.await()
+//                textViewDate.text = currentDate
+//                loadSpinnerCaseNo()
+//                loadSpinnerOrderNo()
+//
+//            }
+//        }
+//    }
 
-        }
-        lifecycleScope.launch(Dispatchers.Main) {
-            if (deferred.isActive) {
-                val progressDialogBuilder = Gvariable().createProgressDialog(this@Packing)
-                try {
-                    progressDialogBuilder.show()
-                    deferred.await()
-
-                } finally {
-                    textViewDate.text = currentDate
-                    loadSpinnerCaseNo()
-                    loadSpinnerOrderNo()
-                    progressDialogBuilder.cancel()
-                }
-            } else {
-                deferred.await()
-                textViewDate.text = currentDate
-                loadSpinnerCaseNo()
-                loadSpinnerOrderNo()
-
-            }
-        }
+    private fun initiateActivity(){
+        textViewDate.text = currentDate
+        loadSpinnerCaseNo()
+        loadSpinnerOrderNo()
     }
 
     private fun asyncSaveCaseNo(sCaseNo: String){
@@ -585,7 +623,6 @@ class Packing : AppCompatActivity() {
                     deferred.await()
 
                 } finally {
-
                     progressDialogBuilder.cancel()
                 }
             } else {
@@ -595,10 +632,8 @@ class Packing : AppCompatActivity() {
         }
     }
 
-    // TO DO SHOW COLOR
-
     private fun checkOrder(){
-        val subStringFullOrder = fullOrder.substring(4,7)
+        val subStringFullOrder = fullOrder.substring(5,8)
         val serialOrder = editTextCheckOrder.text.toString().trim()
         var orderNo = ""
         var orderQty = 0
@@ -608,7 +643,7 @@ class Packing : AppCompatActivity() {
         if(serialOrder == subStringFullOrder){
             //Save
             orderNo = fullOrder
-            var orderList = OrderProcessQuery().getOrder(PartNo, orderNo, date)
+            val orderList = OrderProcessQuery().getOrder(PartNo, orderNo, date)
             orderQty = OrderProcessQuery().getSumQtyByPid(orderList[0].pId!!, "ReceiveQty")
             if(orderQty != 0){
                 try{
@@ -638,8 +673,8 @@ class Packing : AppCompatActivity() {
                         }
                     }
                     else -> {
-                        var dCaseNo = spinnerCaseNo.selectedItem.toString().substring(1,5)
-                        var dOrderNo = spinnerOrderNo.selectedItem.toString().substring(1,5)
+                        var dCaseNo = spinnerCaseNo.selectedItem.toString().substring(0,3)
+                        var dOrderNo = spinnerOrderNo.selectedItem.toString().substring(0,3)
                         if(dCaseNo == dOrderNo){
                             if(orderList.isNotEmpty()){
                                 var chk = false
@@ -647,6 +682,9 @@ class Packing : AppCompatActivity() {
                                 for (i in 0 until orderList.size){
                                     edpPart = PackingQuery().isEDP(orderList[i].partNo!!)
                                     if(chk){
+                                        Handler(Looper.getMainLooper()).post(){
+                                            buttonSave.visibility = GONE
+                                        }
                                         break
                                     }else{
                                         when {
@@ -685,17 +723,18 @@ class Packing : AppCompatActivity() {
                                                 }
                                                 strTotal = OrderProcessQuery().getSumQty(orderList[i].orderDetailId!!, "PackQty").toString()
                                                 Handler(Looper.getMainLooper()).post(){
-                                                    //lblW.Visible = False
+                                                    textViewWeek.visibility = INVISIBLE
                                                     editTextKB.setText("")
                                                     editTextSticker.setText("")
                                                     editTextQty.setText("1")
-//                                    orderList.clear()
-//                                    loadSpinnerOrderNo()
+                                                    orderNoList.clear()
+                                                    loadSpinnerOrderNo()
                                                     textViewPartNo.text = orderList[i].partNo
                                                     textViewBarcodeType.text = ""
                                                     editTextKB.selectAll()
                                                     editTextKB.requestFocus()
-//                                                    btSave.Enabled = True
+                                                    textViewTotal.text = strTotal
+                                                    buttonSave.isEnabled = true
                                                 }
                                             }
                                         }
@@ -792,27 +831,28 @@ class Packing : AppCompatActivity() {
                                 }
                                 strTotal = OrderProcessQuery().getSumQty(orderList[i].orderDetailId!!, "PackQty").toString()
                                 Handler(Looper.getMainLooper()).post(){
-                                    //lblW.Visible = False
+                                    textViewWeek.visibility = GONE
                                     editTextKB.setText("")
                                     editTextSticker.setText("")
                                     editTextQty.setText("1")
-//                                    orderList.clear()
-//                                    loadSpinnerOrderNo()
+                                    orderNoList.clear()
+                                    loadSpinnerOrderNo()
                                     textViewPartNo.text = orderList[i].partNo
                                     textViewBarcodeType.text = ""
                                     editTextKB.selectAll()
                                     editTextKB.requestFocus()
+                                    textViewTotal.text = strTotal
                                 }
                             }
                         }
                     }
                     if(chk){
-                        //buttonSave is visible
+                        buttonSave.visibility = INVISIBLE
                     }else{
                         Gvariable().alarm(this)
                         Gvariable().messageAlertDialog(this, "แสกน Serial No. นี้เรียบร้อยแล้ว", layoutInflater)
                         Handler(Looper.getMainLooper()).post(){
-                            //lblW.Visible = False
+                            textViewWeek.visibility = GONE
                             editTextKB.setText("")
                             editTextSticker.setText("")
                             editTextQty.setText("1")
@@ -823,7 +863,10 @@ class Packing : AppCompatActivity() {
                             editTextKB.requestFocus()
                         }
                     }
-                    //lbTotal.Text = Strtotal '& " / " & ds.Rows(0).Item("Qty")
+                    Handler(Looper.getMainLooper()).post(){
+
+                    }
+                    textViewTotal.text = strTotal
                     orderList.clear()
                 }
                 else{
@@ -894,7 +937,6 @@ class Packing : AppCompatActivity() {
                 if(PackingQuery().checkPartAvailable(editTextKB.text.toString().trim().uppercase(), "")){
                     //OK
                     Handler(Looper.getMainLooper()).post(){
-                        editTextKB.setText(PartNo)
                         editTextSticker.selectAll()
                         editTextSticker.requestFocus()
                         editTextKB.nextFocusDownId = editTextSticker.id
@@ -922,9 +964,30 @@ class Packing : AppCompatActivity() {
                 }
             }
         }
+        else{
+            if(PackingQuery().checkPartAvailable(editTextKB.text.toString().trim().uppercase(), "")){
+                //OK
+                Handler(Looper.getMainLooper()).post(){
+                    editTextSticker.selectAll()
+                    editTextSticker.requestFocus()
+                    editTextKB.nextFocusDownId = editTextSticker.id
+                }
+            }
+            else{
+                Gvariable().alarm(this)
+                Gvariable().messageAlertDialog(this, "ไม่พบ Part No. หรือ Serial KB สำหรับ Packing", layoutInflater)
+                Handler(Looper.getMainLooper()).post(){
+                    editTextKB.selectAll()
+                    editTextKB.requestFocus()
+                    textViewPartNo.text = ""
+                    editTextQty.isEnabled = true
+                    buttonSave.isVisible = false
+                }
+            }
+        }
     }
 
-    fun listOrderNo(orderDate:String, partNo:String, process:String){
+    private fun listOrderNo(orderDate:String, partNo:String, process:String){
         orderNoList.clear()
         val showOrderList = DeliveryQuery().showOrder( orderDate, partNo, process)
         for(i in 0 until showOrderList.size){
@@ -970,6 +1033,50 @@ class Packing : AppCompatActivity() {
         buttonNo.setOnClickListener {
             dialog.dismiss()
         }
+    }
+
+    private fun asyncOrderList(){
+        val deferred = lifecycleScope.async(Dispatchers.IO) {
+            ListOrder.orderList.clear()
+            ListOrder.orderList = OrderDetailQuery().loadDataOrderDetail(uOrderNo)
+        }
+        lifecycleScope.launch(Dispatchers.Main) {
+            if (deferred.isActive) {
+                val progressDialogBuilder = Gvariable().createProgressDialog(this@Packing)
+                try {
+                    progressDialogBuilder.show()
+                    deferred.await()
+
+                } finally {
+                    progressDialogBuilder.cancel()
+                    val intent = Intent(this@Packing, ListOrder::class.java)
+                    startActivity(intent)
+                }
+            } else {
+                deferred.await()
+            }
+        }
+    }
+
+    private fun datePicker(){
+        val arrayList = currentDate.split("-").toTypedArray()
+        val year = Integer.parseInt(arrayList[2])
+        val month = Integer.parseInt(arrayList[1]) - 1
+        val day = Integer.parseInt(arrayList[0])
+        var oldDate = currentDate
+        val dpd = DatePickerDialog(
+            this,
+            DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
+                val mth = monthOfYear + 1
+                currentDate = "${String.format("%02d",dayOfMonth)}-${String.format("%02d",mth)}-$year"
+                textViewDate.text = currentDate
+
+            },
+            year,
+            month,
+            day
+        )
+        dpd.show()
     }
 
     inner class MinMaxFilter() : InputFilter {

@@ -40,6 +40,8 @@ class CheckListCase : AppCompatActivity() {
         lateinit var cardView: CardView
         var orderNoList = ArrayList<String>()
         var noSKBUpdate = false
+        var selectedPartNo = ""
+        var loadRecyclerCase = false
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -120,7 +122,13 @@ class CheckListCase : AppCompatActivity() {
             var sCaseNo = editTextCaseNo.text.toString()
 
             if(sCaseNo.isNotEmpty()){
-                alertDialog()
+                if(selectedPartNo.isNotEmpty()){
+                    alertDialog()
+                }
+                else{
+                    Gvariable().alarm(this)
+                    Gvariable().messageAlertDialog(this, "โปรดเลือก Part No.", layoutInflater)
+                }
             }else{
                 Gvariable().alarm(this)
                 Gvariable().messageAlertDialog(this, "กรุณาแสกน CaseNo", layoutInflater)
@@ -188,6 +196,7 @@ class CheckListCase : AppCompatActivity() {
         }
     }
     fun asyncRecyclerItemChange(context: Context, sPartNo: String, sQty: Int){
+        selectedPartNo =  sPartNo
         var qty = 0
         val deferred = lifecycleScope.async(Dispatchers.IO) {
             val sCaseNo = editTextCaseNo.text.toString().trim()
@@ -195,7 +204,7 @@ class CheckListCase : AppCompatActivity() {
             qty = if(sPartNo.length == 15){
                 1
             }else{
-                PackingQuery().getQtyByCaseNo(sCaseNo, spinnerOrderNo.selectedItem.toString(),sPartNo)
+                PackingQuery().getQtyByCaseNo(sCaseNo, orderNoList[0],sPartNo)
             }
         }
         lifecycleScope.launch(Dispatchers.Main) {
@@ -246,6 +255,16 @@ class CheckListCase : AppCompatActivity() {
                 Handler(Looper.getMainLooper()).post(){
                     textViewPartNo.text = ""
                     editTextQty.setText("0")
+                    orderNoList.clear()
+                    setOrderNoSpinner(this@CheckListCase)
+                }
+            }
+            packingInfoList.clear()
+            packingInfoList = PackingQuery().getListPackingInfoByCaseNo(sCaseNo)
+            if(packingInfoList.isNotEmpty()){
+                val qty = PackingQuery().getTotalPackQtyByCaseNo(sCaseNo).toString()+" K/B "
+                Handler(Looper.getMainLooper()).post {
+                    textviewTotal.text = qty
                 }
             }
         }
@@ -258,6 +277,7 @@ class CheckListCase : AppCompatActivity() {
 
                 } finally {
                     loadRecyclerView()
+                    selectedPartNo = ""
                     progressDialogBuilder.cancel()
                 }
             } else {
@@ -279,7 +299,10 @@ class CheckListCase : AppCompatActivity() {
                     deferred.await()
 
                 } finally {
-                    loadRecyclerView()
+                    if (loadRecyclerCase){
+                        selectedPartNo = ""
+                        loadRecyclerView()
+                    }
                     progressDialogBuilder.cancel()
                     if(noSKBUpdate){
                         alertDialogNoSKBUpdate()
@@ -295,10 +318,10 @@ class CheckListCase : AppCompatActivity() {
     private fun save(){
         try{
             noSKBUpdate = false
-            var sCaseNo = editTextCaseNo.text.toString()
-            var sPartNo = textViewPartNo.text.toString()
-            var sOrderNo = spinnerOrderNo.selectedItem.toString()
-            var qty = Integer.parseInt(editTextQty.text.toString().trim())
+            val sCaseNo = editTextCaseNo.text.toString()
+            val sPartNo = selectedPartNo
+            val sOrderNo = spinnerOrderNo.selectedItem.toString()
+            val qty = Integer.parseInt(editTextQty.text.toString().trim())
             var recQty = 0
 
             //case Serial K/B
@@ -306,6 +329,7 @@ class CheckListCase : AppCompatActivity() {
                 recQty = PackingQuery().getQtyInOrder(sOrderNo, sPartNo)
                 when {
                     qty > recQty -> {
+                        loadRecyclerCase = false
                         Gvariable().alarm(this)
                         Gvariable().messageAlertDialog(this, "จำนวนต้องไม่เกิน Receive Qty", layoutInflater)
                         Handler(Looper.getMainLooper()).post(){
@@ -315,6 +339,7 @@ class CheckListCase : AppCompatActivity() {
                     }
 
                     qty > 1 -> {
+                        loadRecyclerCase = false
                         Gvariable().alarm(this)
                         Gvariable().messageAlertDialog(this, "กรณี Serial No. จำนวนต้องไม่เกิน 1", layoutInflater)
                         Handler(Looper.getMainLooper()).post(){
@@ -324,6 +349,7 @@ class CheckListCase : AppCompatActivity() {
                     }
 
                     qty == 0 -> {
+                        loadRecyclerCase = true
                         if(PackingQuery().updateOrderProcessSKB(sOrderNo, sPartNo)){
                             PackingQuery().deletePackingInformationSKB(sCaseNo, sOrderNo, sPartNo)
                             Gvariable().messageOkDialog(this, "บบันทึกข้อมูลเรียบร้อย", layoutInflater)
@@ -333,12 +359,11 @@ class CheckListCase : AppCompatActivity() {
                                 textViewPartNo.text = ""
                                 editTextQty.setText("0")
                             }
-                            packingInfoList.clear()
-                            packingInfoList = PackingQuery().getListPackingInfoByCaseNo(sCaseNo)
                         }
                     }
 
                     else -> {
+                        loadRecyclerCase = true
                         Gvariable().messageOkDialog(this, "บันทึกข้อมูลเรียบร้อย", layoutInflater)
                         Handler(Looper.getMainLooper()).post(){
                             orderNoList.clear()
@@ -346,8 +371,6 @@ class CheckListCase : AppCompatActivity() {
                             textViewPartNo.text = ""
                             editTextQty.setText("0")
                         }
-                        packingInfoList.clear()
-                        packingInfoList = PackingQuery().getListPackingInfoByCaseNo(sCaseNo)
                     }
                 }
             }
@@ -356,6 +379,7 @@ class CheckListCase : AppCompatActivity() {
                 recQty = PackingQuery().getQtyInOrder(sOrderNo, sPartNo)
                 val packQty:Int = PackingQuery().getTotalPackQtyNotInCaseNo(sOrderNo, sPartNo, sCaseNo)
                 if( (qty + packQty) > recQty){
+                    loadRecyclerCase = false
                     Gvariable().alarm(this)
                     Gvariable().messageAlertDialog(this, "จำนวนต้องไม่เกิน Receive Qty", layoutInflater)
                     Handler(Looper.getMainLooper()).post(){
@@ -363,20 +387,28 @@ class CheckListCase : AppCompatActivity() {
                         editTextQty.requestFocus()
                     }
                 }
-
-                if(qty >= 0){
-                    noSKBUpdate = true
-                }else{
-                    Gvariable().alarm(this)
-                    Gvariable().messageAlertDialog(this, "จำนวนต้องมากกว่าหรือเท่ากับ 0", layoutInflater)
-                    Handler(Looper.getMainLooper()).post(){
-                        editTextQty.setText("0")
-                        editTextQty.requestFocus()
+                else{
+                    if(qty >= 0){
+                        noSKBUpdate = true
+                    }else{
+                        loadRecyclerCase = false
+                        Gvariable().alarm(this)
+                        Gvariable().messageAlertDialog(this, "จำนวนต้องมากกว่าหรือเท่ากับ 0", layoutInflater)
+                        Handler(Looper.getMainLooper()).post(){
+                            editTextQty.setText("0")
+                            editTextQty.requestFocus()
+                        }
                     }
                 }
             }
             packingInfoList.clear()
             packingInfoList = PackingQuery().getListPackingInfoByCaseNo(sCaseNo)
+            if(packingInfoList.isNotEmpty()){
+                val qty = PackingQuery().getTotalPackQtyByCaseNo(sCaseNo).toString()+" K/B "
+                Handler(Looper.getMainLooper()).post {
+                    textviewTotal.text = qty
+                }
+            }
         }catch (e:Exception){
             e.printStackTrace()
         }

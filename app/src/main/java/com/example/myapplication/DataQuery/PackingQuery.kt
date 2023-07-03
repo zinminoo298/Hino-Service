@@ -246,7 +246,7 @@ class PackingQuery {
         try{
             Gvariable().startConn()
             val statement = Gvariable.conn!!.createStatement()
-            statement.executeQuery(sql)
+            statement.executeUpdate(sql)
             statement.close()
             Gvariable.conn!!.close()
         }catch (e:Exception){
@@ -260,7 +260,7 @@ class PackingQuery {
         try{
             Gvariable().startConn()
             val statement = Gvariable.conn!!.createStatement()
-            statement.executeQuery(sql)
+            statement.executeUpdate(sql)
             statement.close()
             Gvariable.conn!!.close()
         }catch (e:Exception){
@@ -347,7 +347,7 @@ class PackingQuery {
         return try{
             Gvariable().startConn()
             val statement = Gvariable.conn!!.createStatement()
-            statement.executeQuery(sql)
+            statement.executeUpdate(sql)
             statement.close()
             Gvariable.conn!!.close()
             true
@@ -363,7 +363,7 @@ class PackingQuery {
         return try{
             Gvariable().startConn()
             val statement = Gvariable.conn!!.createStatement()
-            statement.executeQuery(sql)
+            statement.executeUpdate(sql)
             statement.close()
             Gvariable.conn!!.close()
             true
@@ -478,7 +478,7 @@ class PackingQuery {
         return try{
             Gvariable().startConn()
             val statement = Gvariable.conn!!.createStatement()
-            statement.executeQuery(sql)
+            statement.executeUpdate(sql)
             statement.close()
             Gvariable.conn!!.close()
             true
@@ -494,7 +494,7 @@ class PackingQuery {
         return try{
             Gvariable().startConn()
             val statement = Gvariable.conn!!.createStatement()
-            statement.executeQuery(sql)
+            statement.executeUpdate(sql)
             statement.close()
             Gvariable.conn!!.close()
             true
@@ -510,7 +510,7 @@ class PackingQuery {
         return try{
             Gvariable().startConn()
             val statement = Gvariable.conn!!.createStatement()
-            statement.executeQuery(sql)
+            statement.executeUpdate(sql)
             statement.close()
             Gvariable.conn!!.close()
             true
@@ -565,7 +565,7 @@ class PackingQuery {
         return try{
             Gvariable().startConn()
             val statement = Gvariable.conn!!.createStatement()
-            statement.executeQuery(sql)
+            statement.executeUpdate(sql)
             statement.close()
             Gvariable.conn!!.close()
             true
@@ -620,14 +620,14 @@ class PackingQuery {
                 }
                 result = "$weekOfMonth|$color"
             }else{
-                result = ""
+                result = "|"
             }
             statement.close()
             Gvariable.conn!!.close()
         }catch (e:Exception){
             e.printStackTrace()
             Gvariable.conn!!.close()
-            result = ""
+            result = "|"
         }
         return result
     }

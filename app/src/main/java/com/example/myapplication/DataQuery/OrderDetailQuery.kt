@@ -212,7 +212,7 @@ class OrderDetailQuery {
         return orderList
     }
 
-    fun getOrderDetailBySerial(station: String, serialNo: String) : String{
+    fun  getOrderDetailBySerial(station: String, serialNo: String) : String{
         var orderDetail = ""
         var result:ResultSet? = null
         var sql = ""

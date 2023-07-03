@@ -19,6 +19,9 @@
         android:theme="@style/Theme.NoActionBar"
         tools:targetApi="31">
         <activity
+            android:name=".ViewFullOrder"
+            android:exported="false" />
+        <activity
             android:name=".ListCase"
             android:exported="false" />
         <activity

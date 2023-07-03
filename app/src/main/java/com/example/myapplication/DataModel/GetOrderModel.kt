@@ -1,22 +1,22 @@
 package com.example.myapplication.DataModel
 
 class GetOrderModel {
-    var receiveQty:Int? = null
-    var receiveDate:String? = null
-    var pId:String? = null
-    var partNo:String? = null
-    var orderDetailId:String? = null
-    var edpQualityCheckDate:String? = null
-    var packingDate:String? = null
+    var receiveQty = 0
+    var receiveDate = ""
+    var pId:String? = ""
+    var partNo:String = ""
+    var orderDetailId = ""
+    var edpQualityCheckDate = ""
+    var packingDate = ""
 
     constructor(
-        receiveQty: Int?,
-        receiveDate: String?,
-        pId: String?,
-        partNo: String?,
-        orderDetailId: String?,
-        edpQualityCheckDate: String?,
-        packingDate:String?
+        receiveQty: Int,
+        receiveDate: String,
+        pId: String,
+        partNo: String,
+        orderDetailId: String,
+        edpQualityCheckDate: String,
+        packingDate:String
     ) {
         this.receiveQty = receiveQty
         this.receiveDate = receiveDate
